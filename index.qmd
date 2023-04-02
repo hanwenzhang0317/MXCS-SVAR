@@ -1,5 +1,5 @@
 ---
-title: "Accessing Fiscal Policy Effect using Structural VAR"
+title: "Fiscal policy shocks and stock prices"
 author: "Hanwen Zhang"
 
 execute:
@@ -8,78 +8,110 @@ execute:
 bibliography: references.bib
 ---
 
-> **Abstract.** This is a suggested formatting for your abstract. This **quarto** document is a template for your report. It includes some basic ways of working with such documents. You are invited to learn more about developing online reports with this technology. 
+> **Abstract.** This is a reserarch proposal, the research is about measuring fiscal policy effect using Structural VAR models in Australian Economy.
 >
-> **Keywords.** fiscal policy shock, SVAR, impulse responses, tax shocks, stock price
-
-
-
-```{r package load}
-library(readrba)
-library(readabs)
-library(xts)
-Sys.setenv(R_READABS_PATH = "/Users/hanwenzhang/Desktop/Macro/data")
-```
-
+> **Keywords.** fiscal policy shock, SVAR, tax shocks, stock price
 
 # Introduction
 
+How does tax cuts affect the economy? Will tax reductions boost stock market? This report aims to answer these questions in the background of Australian Economy. These questions are crucial to understanding of dynamic economics and the stimulus policy-making process. 
+
 # Literature Review
+Estimated effects of tax shocks on output don't agree on each other in the previous literature. 
+
 
 # Data 
+The variables that are of interest include GDP, total government expenditure, total government revenue, interest rate, inflation, public debt and stock prices. **Justify.** 
 
-# Methodology 
+```{r collecting data of interest}
+#| echo: false
+#| message: false
+#| warning: false
+
+# quarterly, seasonally adjusted, nominal, GDP per capita, unit: $
+# 1973-09-01 to 2022-12-01 --> 198 quarters 
+gdp_no_pc <- readabs::read_abs(series_id = "A2304420C") 
+tmp.gdp_no_pc <- na.omit(xts::xts(gdp_no_pc$value, gdp_no_pc$date) )
+# head(na.omit(tmp.gdp_no_pc)) 
+
+# quarterly, seasonally adjusted, nominal, GDP, unit: $M
+# 1959-09-01 to 2022-12-01 --> 254 quarters 
+gdp_no <- readabs::read_abs(series_id = "A2304418T") 
+tmp.gdp_no <- xts::xts(gdp_no$value, gdp_no$date) 
+# length(na.omit(tmp.gdp_no)) 
+
+# Get population unit: M
+pop <-  tmp.gdp_no/tmp.gdp_no_pc
+
+# quarterly, seasonally adjusted, GDP deflator, unit: 
+# 1959-09-01 to 2022-12-01 --> 254 quarters 
+gdp_deflator <- readabs::read_abs(series_id = "A2303730T") 
+tmp.gdp.deflator <- xts::xts(gdp_deflator$value, gdp_deflator$date) 
+
+# construct log real GDP per capita
+gdp_real_pc <- na.omit(log(tmp.gdp_no_pc/tmp.gdp.deflator)) # 1973-09-01 to 2022-12-01
+
+# quarterly, seasonally adjusted, government spending, unit: $M
+# 1959-09-01 to 2022-12-01 --> 254 quarters 
+gov_spend <- readabs::read_abs(series_id = "A2304036K") 
+tmp.gov_spend  <- xts::xts(gov_spend$value, gov_spend$date) 
+
+# quarterly, original, government spending, unit: $M
+# 1959-09-01 to 2022-12-01 --> 254 quarters 
+gov_revenue <- readabs::read_abs(series_id = "A2302411R") 
+tmp.gov_revenue <- xts::xts(gov_revenue$value, gov_revenue$date) 
 
 
-```{r}
-#| echo: true
-##| label: tbl-irf
-##| tbl-cap: Impulse response of gdp to unanticipated tax increase by 1 pp. within two years
-#irf_gdp_tax = matrix(apply(irf[3,1,1:9,],1, mean), nrow = 1)
-#rownames(irf_gdp_tax) = "change in gdp [%]"
-#colnames(irf_gdp_tax) = 0:8
-#knitr::kable(irf_gdp_tax, digits = 3)
+# original CPI
+# 1948-09-01 to 2022-12-01 --> 298 quarters 
+cpi <-  readabs::read_abs(series_id = "A2325846C") 
+tmp.cpi <- xts::xts(cpi$value, cpi$date) 
+# length(tmp.cpi)
+# tail(tmp.cpi)
+
+inflation <- 100*diff(tmp.cpi)/tmp.cpi
+
+# readrba::read_rba(series_id = "FIRMMCRI") 
+# A2149474A
+
+
+# quarterly, seasonally adjusted, Total taxes, unit: $M
+# 1959-09-01 to 2022-12-01 --> 254 quarters 
+# from table: 5206022_Taxes A2302794K
+
 ```
 
-```{r}
-#| echo: true
-##| label: fig-irf
-##| fig-cap: Impulse response of gdp to unanticipated tax increase by 1 pp. within five years
-#irf_median    = apply(irf[3,1,,],1, median)
-#irf_hdi       = apply(irf[3,1,,],1, HDInterval::hdi, credMass = .68)
-#plot(x = 0:20, y = irf_median, type = "l", bty = "n", 
-    # xlab = "horizon", ylab = "change in gdp [%]",
-   #  ylim = range(irf_hdi))
-#polygon(x = c(0:20, 20:0), y = c(irf_hdi[1,], irf_hdi[2,21:1]), col = "deepskyblue1", border = "deepskyblue1")
-#lines(x = 0:20, y = irf_median, lwd = 2, col = "deepskyblue3")
+
+```{r data visualization}
+plot.ts(gdp_real_pc,main="Log Quarterly Real GDP Per Capita")
 ```
 
 
+# Methodology
 
-```{r}
-#| echo: true
-nominal_gdp <- read_abs(series_id = "A2304420C") # GDP per capita: Current prices ;
-tmp.gdp.nominal <- xts(nominal_gdp$value, nominal_gdp$date) # 1959-09-01
-na.omit(tmp.gdp.nominal) 
+Structural vector autoregression (SVAR) models can be used to estimate the impact of taxation shocks in Australian economy. The benchmark model is defined as: 
+\begin{align}
+B_0Y_t = b_0 + \sum_{i=1}^{p}B_{i}Y_{t-i}+u_t 
+\end{align}
+\begin{align}
+u_t|Y_{t-1}\sim iid(0_N,I_N)
+\end{align}
 
-deflator_gdp <- read_abs(series_id = "A2303730T") # GROSS DOMESTIC PRODUCT ;
-tmp.gdp.deflator <- xts(deflator_gdp$value, deflator_gdp$date) 
-na.omit(tmp.gdp.deflator) 
-head(tmp.gdp.deflator)
+$Y_t$ is $N\times1$ matrix of endogeneius variables, N represents the number of endogeneous variables and p is the number of lags, $B_0$ is $N\times N$ matrix capturing contemporaneous relationships between variables, and $u_t$ is $N\times1$ vector conditionally on $Y_{t-1}$ orthogonal structural shocks. 
 
-real_gdp <- tmp.gdp.nominal/tmp.gdp.deflator
-gdp <- log(na.omit(real_gdp)) # 1973-09-01 to 2022-12-01
-head(gdp)
+The reduced form representation is: 
+\begin{align}
+Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
+\end{align}
+\begin{align}
+\epsilon_t|Y_{t-1}\sim iid(0_N,\Sigma)
+\end{align}
 
-total_tax <- read_abs(series_id = "A2302794K")
-tmp.tax <- xts(total_tax$value, total_tax$date) 
-tax <- tmp.tax / tmp.gdp.deflator # 1959-09-01 to 2022-12-01
+The covariance matrix of $\epsilon_t$ can be written as:
+\begin{align}
+\Sigma=B_0^{-1}{B_0^{-1}}^{'}
+\end{align}
 
-
-
-```
-
-
-# Preliminary Results 
+# Preliminary Results
 
 # References {.unnumbered}
