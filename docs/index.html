@@ -199,12 +199,26 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </section>
 <section id="data" class="level1">
 <h1>Data</h1>
-<p>The variables that are of interest include GDP, total government expenditure, total government revenue, cash rate target, inflation, public debt and stock prices. Those economic variables were collected from Reserve Bank of Australia (RBA) and Australian Bureau of Statistics (ABS), spanning quarterly from 1990 Q1 to 2022 Q4.</p>
-<p>Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studied into detail in the future research. All Ordinaries data started from 2001-04-19, matching the date need to truncate 10 years of observations, which will result in a smaller sample size, thus, sub-samples would be considered to be implemented, for example, there could be one sample containing all the variables from 1990 to 2022 except stock prices to investigate the effects on economy. Inflation and cash rate target are also introduced in the model as controls.</p>
-<p>Variables are transformed into real per-capita terms and compute logarithms as Mumtaz and Theodoridis (2020), except inflation and cash rate target. In this stage, only the sample including all variables ranging from 2001 Q2 to 2022 Q4 is considered in the following section.</p>
 <div class="cell">
 
 </div>
+<p>The variables that are of interest include GDP, total government expenditure, total government revenue, cash rate target, inflation, public debt and stock prices. Those economic variables were collected from Reserve Bank of Australia (RBA) and Australian Bureau of Statistics (ABS), spanning quarterly from 1990 Q1 to 2022 Q4.</p>
+<p>Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studied into detail in the future research. All Ordinaries data started from 2001-04-19, matching the date need to truncate 10 years of observations, which will result in a smaller sample size, thus, sub-samples would be considered to be implemented, for example, there could be one sample containing all the variables from 1990 to 2022 except stock prices to investigate the effects on economy. Inflation and cash rate target are also introduced in the model as controls.(Plots of original data are shown in: <a href="#fig-plot">Figure&nbsp;1</a>.)</p>
+<div class="cell">
+
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-plot" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/fig-plot-1.png" class="img-fluid figure-img" width="672"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;1: Time Series Plots : in nominal prices</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<p>While GDP and government expenditure depict upward trend, government revenue shows increasing trend with seasonal patterns. Public debt kept relatively flat before the Global Financial Crisis (GFC), and started to increase after. Interest rate has a downward trend while stock prices exhibiting significant drop during GFC.</p>
+<p>Variables are transformed into real per-capita terms and compute logarithms as in Mumtaz and Theodoridis (2020), except inflation and cash rate target. In this stage, only the sample including all variables ranging from 2001 Q2 to 2022 Q4 is considered in the following section. Plots are provided as <a href="#fig-line-plot">Figure&nbsp;2</a>.</p>
 <div class="cell">
 
 </div>
@@ -276,28 +290,26 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <tr class="odd">
 <td style="text-align: left;">Stock</td>
 <td style="text-align: right;">87</td>
-<td style="text-align: right;">6.234</td>
-<td style="text-align: right;">0.298</td>
-<td style="text-align: right;">5.605</td>
-<td style="text-align: right;">6.875</td>
+<td style="text-align: right;">4.102</td>
+<td style="text-align: right;">0.151</td>
+<td style="text-align: right;">3.784</td>
+<td style="text-align: right;">4.484</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
 </div>
-<p>Plots of transformed data are shown as: <a href="#fig-line-plot">Figure&nbsp;1</a>.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-line-plot" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="index_files/figure-html/fig-line-plot-1.png" class="img-fluid figure-img" width="672"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;1: Time Series Plots</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;2: Time Series Plots (Green lines are log transformation)</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
-<p>While logarithms of real per capita GDP and government expenditure depict upward trend, government revenue shows increasing trend with seasonal patterns. Public debt has a significant drop starting end of 1990s. Interest rate has a downward trend while stock prices exhibiting downward trend after the Global Financial Crisis (GFC).</p>
 </section>
 <section id="methodology" class="level1">
 <h1>Methodology</h1>
@@ -331,13 +343,13 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 </section>
 <section id="preliminary-results" class="level1">
 <h1>Preliminary Results</h1>
-<p>ACF Plots as in <a href="#fig-acf-plot">Figure&nbsp;2</a> show non-zero autocorrelations for at least 15 lags of variables except Inflation. PACF Plots as <a href="#fig-pacf-plot">Figure&nbsp;3</a> indicate significant and strong memory at the first lag of variables except Inflation, of, for which the first lag is also statistically significant but not strong.</p>
+<p>ACF Plots as in <a href="#fig-acf-plot">Figure&nbsp;3</a> show non-zero autocorrelations for at least 15 lags of variables except Inflation. PACF Plots as <a href="#fig-pacf-plot">Figure&nbsp;4</a> indicate significant and strong memory at the first lag of variables except Inflation, of, for which the first lag is also statistically significant but not strong.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-acf-plot" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="index_files/figure-html/fig-acf-plot-1.png" class="img-fluid figure-img" width="672"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;2: ACF Plots</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;3: ACF Plots</figcaption><p></p>
 </figure>
 </div>
 </div>
@@ -347,7 +359,7 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 <div id="fig-pacf-plot" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="index_files/figure-html/fig-pacf-plot-1.png" class="img-fluid figure-img" width="672"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;3: Partial ACF Plots</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;4: Partial ACF Plots</figcaption><p></p>
 </figure>
 </div>
 </div>
@@ -417,9 +429,9 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Stock</td>
-<td style="text-align: right;">-2.378</td>
+<td style="text-align: right;">-2.573</td>
 <td style="text-align: right;">4</td>
-<td style="text-align: right;">0.421</td>
+<td style="text-align: right;">0.340</td>
 </tr>
 </tbody>
 </table>
@@ -479,7 +491,7 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Stock</td>
-<td style="text-align: right;">-4.394</td>
+<td style="text-align: right;">-4.475</td>
 <td style="text-align: right;">4</td>
 <td style="text-align: right;">0.010</td>
 </tr>

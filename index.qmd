@@ -23,11 +23,6 @@ While fiscal policy shocks have evidence of playing a role in affecting output, 
 Although there is an unignorable amount of literature regarding the effects of fiscal policy, among which a large proportion of data analysed is based on US economy. This paper aims to fill the lack of such literature about Australian economy.  
 
 # Data 
-The variables that are of interest include GDP, total government expenditure, total government revenue, cash rate target, inflation, public debt and stock prices. Those economic variables were collected from Reserve Bank of Australia (RBA) and Australian Bureau of Statistics (ABS), spanning quarterly from 1990 Q1 to 2022 Q4. 
-
-Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studied into detail in the future research. All Ordinaries data started from 2001-04-19, matching the date need to truncate 10 years of observations, which will result in a smaller sample size, thus, sub-samples would be considered to be implemented, for example, there could be one sample containing all the variables from 1990 to 2022 except stock prices to investigate the effects on economy. Inflation and cash rate target are also introduced in the model as controls. 
-
-Variables are transformed into real per-capita terms and compute logarithms as Mumtaz and Theodoridis (2020), except inflation and cash rate target. In this stage, only the sample including all variables ranging from 2001 Q2 to 2022 Q4 is considered in the following section.
 
 ```{r collecting data of interest}
 #| echo: false
@@ -53,7 +48,7 @@ gdp_deflator <- readabs::read_abs(series_id = "A2303730T")
 tmp.gdp.deflator <- xts::xts(gdp_deflator$value, gdp_deflator$date) 
 
 # construct log real GDP per capita
-gdp_real_pc <- na.omit(log(tmp.gdp_no_pc/tmp.gdp.deflator)) # 1973-09-01 to 2022-12-01
+gdp_real_pc <- na.omit(tmp.gdp_no_pc/tmp.gdp.deflator) # 1973-09-01 to 2022-12-01
 
 # quarterly, seasonally adjusted, government spending, unit: $M
 # 1959-09-01 to 2022-12-01 --> 254 quarters 
@@ -93,10 +88,51 @@ AORD$Date <- as.Date(as.character(AORD$Date),format="%m/%d/%Y")
 AORD$Close <- as.numeric(AORD$Close)
 tmp.aord <- xts::xts(AORD$Close, AORD$Date) 
 aord_q <- xts::to.quarterly(tmp.aord,OHLC=FALSE)
-aord <- as.numeric(aord_q) / tmp.gdp.deflator
+aord <- as.numeric(aord_q) / tmp.gdp.deflator[168:length(tmp.gdp.deflator)]
 # ------------------------------------------------------------------------------
 ```
 
+The variables that are of interest include GDP, total government expenditure, total government revenue, cash rate target, inflation, public debt and stock prices. Those economic variables were collected from Reserve Bank of Australia (RBA) and Australian Bureau of Statistics (ABS), spanning quarterly from 1990 Q1 to 2022 Q4. 
+
+Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studied into detail in the future research. All Ordinaries data started from 2001-04-19, matching the date need to truncate 10 years of observations, which will result in a smaller sample size, thus, sub-samples would be considered to be implemented, for example, there could be one sample containing all the variables from 1990 to 2022 except stock prices to investigate the effects on economy. Inflation and cash rate target are also introduced in the model as controls.(Plots of original data are shown in: @fig-plot.)
+
+```{r in normial terms}
+# all in real per capita terms except inflation and interest 
+df.o <- as.data.frame(
+  merge(tmp.gdp_no, # Nominal GDP $M
+            tmp.gov_spend, # Government Spending $M
+            tmp.gov_revenue, # Government Revenue $M
+            tmp.debt, # Pubic Debt $M
+            inflation)) # Inflation (%)
+df.o <- na.omit(df.o)[8:139,] # truncate data from 1990 Q1 to 2022 Q4 
+colnames(df.o) <- c("GDP","Spending","Revenue","Debt","Inflation")
+df.o$Interest <- as.numeric(as.character(interest))
+df.o$Stock[46:132] <- as.numeric(aord_q)
+```
+
+
+```{r data visualization}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-plot
+#| fig-cap: "Time Series Plots : in nominal prices"
+
+dates <- as.Date(rownames(df.o),format = "%Y-%m-%d")
+names <- c("Nominal GDP $M","Government Spending $M","Government Revenue $M","Pubic Debt $M","Inflation (%)","Cash Rate Target (%)","Stock Price $")
+col <- c("#009999","#009999", "#009999", "#009999", "#9933CC", "#9933CC", "maroon")
+par(mfrow=c(4,2), mar=c(2,2,2,2))
+for (i in 1:ncol(df.o)){
+  plot(dates, y = df.o[,i], type = "l", 
+       main = paste(names[i]), ylab = "", xlab = "",
+       col = col[i], lwd = 2.5,
+       ylim = c(min(na.omit(df.o[,i])),max(na.omit(df.o[,i]))))
+}
+
+```
+While GDP and government expenditure depict upward trend, government revenue shows increasing trend with seasonal patterns. Public debt kept relatively flat before the Global Financial Crisis (GFC), and started to increase after. Interest rate has a downward trend while stock prices exhibiting significant drop during GFC.
+
+Variables are transformed into real per-capita terms and compute logarithms as in Mumtaz and Theodoridis (2020), except inflation and cash rate target. In this stage, only the sample including all variables ranging from 2001 Q2 to 2022 Q4 is considered in the following section. Plots are provided as @fig-line-plot.
 
 ```{r wrangling data}
 #| echo: false
@@ -104,15 +140,15 @@ aord <- as.numeric(aord_q) / tmp.gdp.deflator
 #| warning: false
 
 # all in real per capita terms except inflation and interest 
-df.o <- as.data.frame(merge(gdp_real_pc,
+df.log <- as.data.frame(merge(log(gdp_real_pc),
             log(gov_spend_pc),
             log(gov_revenue_pc),
             log(debt.pc),
             inflation))
-df.o <- na.omit(df.o)[8:139,] # truncate data from 1990 Q1 to 2022 Q4 
-colnames(df.o) <- c("GDP","Spending","Revenue","Debt","Inflation")
-df.o$Interest <- as.numeric(as.character(interest))
-df.o$Stock[46:132] <- log(as.numeric(aord))
+df.log <- na.omit(df.log)[8:139,] # truncate data from 1990 Q1 to 2022 Q4 
+colnames(df.log) <- c("GDP","Spending","Revenue","Debt","Inflation")
+df.log$Interest <- as.numeric(as.character(interest))
+df.log$Stock[46:132] <- log(as.numeric(aord))
 ```
 
 @tbl-irf provides summary statistics of wrangled datan from 2001Q2 to 2022Q4. 
@@ -123,10 +159,10 @@ df.o$Stock[46:132] <- log(as.numeric(aord))
 #| label: tbl-irf
 #| tbl-cap: Summary Statistics
 
-df <- na.omit(df.o)
+df <- na.omit(df.log)
 s <- matrix(nrow = 7,ncol = 5)
 colnames(s) <- c("N","Mean","St.Dev.", "Min","Max")
-rownames(s) <- colnames(df.o)
+rownames(s) <- colnames(df.log)
 
 for (i in 1:7){
     s[i,1] <- length(na.omit(df[,i])) 
@@ -139,28 +175,27 @@ for (i in 1:7){
 knitr::kable(s, digits = 3,index=TRUE)
 ```
 
-Plots of transformed data are shown as: @fig-line-plot.
 
 ```{r data visualization}
 #| echo: false
 #| message: false
 #| warning: false
 #| label: fig-line-plot
-#| fig-cap: "Time Series Plots"
+#| fig-cap: "Time Series Plots (Green lines are log transformation)"
 
 dates <- as.Date(rownames(df),format = "%Y-%m-%d")
 col <- c("#009999","#009999", "#009999", "#009999", "#9933CC", "#9933CC", "#009999")
+names <- c("Real GDP per-capita","Government Spending","Government Revenue","Pubic Debt","Inflation","Cash Rate Target","Stock Price")
+
 par(mfrow=c(4,2), mar=c(2,2,2,2))
-for (i in 1:length(colnames(df))){
+for (i in 1:ncol(df)){
   plot(dates, y = df[,i], type = "l", 
-       main = paste(colnames(df)[i]), ylab = "", xlab = "",
+       main = paste(names [i]), ylab = "", xlab = "",
        col = col[i], lwd = 2.5,
        ylim = c(min(na.omit(df[,i])),max(na.omit(df[,i]))))
 }
 
 ```
-
-While logarithms of real per capita GDP and government expenditure depict upward trend, government revenue shows increasing trend with seasonal patterns. Public debt has a significant drop starting end of 1990s. Interest rate has a downward trend while stock prices exhibiting downward trend after the Global Financial Crisis (GFC).
 
 # Methodology
 
@@ -216,7 +251,7 @@ ACF Plots as in @fig-acf-plot show non-zero autocorrelations for at least 15 lag
 par(mfrow=c(4,2), mar=c(2,2,2,2))
 for (j in 1:length(colnames(df))){
   acf(na.omit(df[,j]),main="")
-  title(main = paste(colnames(df)[j]), line = 1)
+  title(main = paste(names[j]), line = 1)
 }
 ```
 
@@ -229,7 +264,7 @@ for (j in 1:length(colnames(df))){
 par(mfrow=c(4,2), mar=c(2,2,2,2))
 for (j in 1:length(colnames(df))){
   pacf(na.omit(df[,j]),main="")
-  title(main = paste(colnames(df)[j]), line = 1)
+  title(main = paste(names[j]), line = 1)
 }
 ```
 
