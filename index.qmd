@@ -1,5 +1,5 @@
 ---
-title: "Fiscal policy shocks and stock prices"
+title: "Fiscal policy shocks, aggregate economy and stock prices: evidence from australian economy"
 author: "Hanwen Zhang"
 
 execute:
@@ -8,20 +8,26 @@ execute:
 bibliography: references.bib
 ---
 
-> **Abstract.** This is a reserarch proposal, the research is about measuring fiscal policy effect using Structural VAR models in Australian Economy.
+> **Abstract.** This is a reserarch proposal, the project is about measuring fiscal policy effects using Bayesian Structural Vector Autoregression(SVAR) in Australian Economy. Inpulse responses of stock prices and macroeconomic aggregated are expected to be investigated. 
 >
-> **Keywords.** fiscal policy shock, SVAR, tax shocks, stock price
+> **Keywords.** fiscal policy shock, SVAR, tax shocks, stock price, impulse response function
 
-# Introduction
+# Motivation 
 
-How does tax cuts affect the economy? Will tax reductions boost stock market? This report aims to answer these questions in the background of Australian Economy. These questions are crucial to understanding of dynamic economics and the stimulus policy-making process. 
+This research project will investigate the effects on fiscal policy. How does tax cuts affect the economy? Will tax reductions boost stock market? These questions are crucial to understanding of dynamic economics and the stimulus policy-making process, and are aimed to be answered in the background of Australian Economy.  
 
-# Literature Review
-Estimated effects of tax shocks on output don't agree on each other in the previous literature. 
+Effects of tax shocks on output has been investigated heavily in the previous literature. For example, Mountford and Uhlig (2009) found an unanticipated deficit-financed tax cut could stimulate the economy in terms of fiscal policy, using sign restrictions. They also revealed that investment falls when tax increases and government spending increases.
 
+While fiscal policy shocks have evidence of playing a role in affecting output, the effects on stock prices is ambiguous. Afonso and Sousa (2011) illustrated government spending shocks have negative effect on stock prices, whereas expansionary tax shocks are related to increase of stock prices. However, Charziantoniou et al. (2013) argued there was no monetary policy indicators in Afonso and Sousa (2011), these authors also suggested over 1991 to 2010, on real and financial variables were not affected by government spending shocks significantly. 
+
+Although there is an unignorable amount of literature regarding the effects of fiscal policy, among which a large proportion of data analysed is based on US market. This paper aims to fill the lack of such literature in Australian economy.  
 
 # Data 
-The variables that are of interest include GDP, total government expenditure, total government revenue, interest rate, inflation, public debt and stock prices. **Justify.** 
+The variables that are of interest include GDP, total government expenditure, total government revenue, cash rate target, inflation, public debt and stock prices. Those economic variables were collected from Reserve Bank of Australia (RBA) and Australian Bureau of Statistics (ABS), spanning quarterly from 1990 Q1 to 2022 Q4. 
+
+Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studies into detail in the future research. All Ordinaries data started from 2001-04-19, however matching the date need to truncate 10 years of observations, which might result in a small sample size, thus, sub-samples would be considered to be implemented, for example, there might be one sample containing all the variables from 1990 to 2022 except stock prices to investigate the effects on economy. Inflation and cash rate target are introduced in the model as controls. 
+
+Variables are transformed into log real per-capita terms except inflation and cash rate target to save computing power. In this stage, only the sample including all variables ranging from 2001 Q2 to 2022 Q4 is considered in the methodology section later. 
 
 ```{r collecting data of interest}
 #| echo: false
@@ -32,13 +38,11 @@ The variables that are of interest include GDP, total government expenditure, to
 # 1973-09-01 to 2022-12-01 --> 198 quarters 
 gdp_no_pc <- readabs::read_abs(series_id = "A2304420C") 
 tmp.gdp_no_pc <- na.omit(xts::xts(gdp_no_pc$value, gdp_no_pc$date) )
-# head(na.omit(tmp.gdp_no_pc)) 
 
 # quarterly, seasonally adjusted, nominal, GDP, unit: $M
 # 1959-09-01 to 2022-12-01 --> 254 quarters 
 gdp_no <- readabs::read_abs(series_id = "A2304418T") 
 tmp.gdp_no <- xts::xts(gdp_no$value, gdp_no$date) 
-# length(na.omit(tmp.gdp_no)) 
 
 # Get population unit: M
 pop <-  tmp.gdp_no/tmp.gdp_no_pc
@@ -55,41 +59,112 @@ gdp_real_pc <- na.omit(log(tmp.gdp_no_pc/tmp.gdp.deflator)) # 1973-09-01 to 2022
 # 1959-09-01 to 2022-12-01 --> 254 quarters 
 gov_spend <- readabs::read_abs(series_id = "A2304036K") 
 tmp.gov_spend  <- xts::xts(gov_spend$value, gov_spend$date) 
-
-# quarterly, original, government spending, unit: $M
+gov_spend_pc <- tmp.gov_spend/pop/tmp.gdp.deflator
+  
+# quarterly, original, total factor income, unit: $M
 # 1959-09-01 to 2022-12-01 --> 254 quarters 
 gov_revenue <- readabs::read_abs(series_id = "A2302411R") 
 tmp.gov_revenue <- xts::xts(gov_revenue$value, gov_revenue$date) 
-
+gov_revenue_pc <- tmp.gov_revenue / pop / tmp.gdp.deflator
 
 # original CPI
 # 1948-09-01 to 2022-12-01 --> 298 quarters 
 cpi <-  readabs::read_abs(series_id = "A2325846C") 
 tmp.cpi <- xts::xts(cpi$value, cpi$date) 
-# length(tmp.cpi)
-# tail(tmp.cpi)
-
 inflation <- 100*diff(tmp.cpi)/tmp.cpi
 
-# readrba::read_rba(series_id = "FIRMMCRI") 
-# A2149474A
+# Cash Rate Target; monthly average
+# 1990-01-23 to 2023-03-31 
+cash_r.d <- readrba::read_rba(series_id = "FIRMMCRTD") 
+tmp.cash_r.d <- xts::xts(cash_r.d$value, cash_r.d$date) 
+# 1990 Q1 to 2022 Q4
+interest <- xts::to.quarterly(tmp.cash_r.d,OHLC=FALSE)[1:132]
 
+# quarterly, original, National general government ;  Total liabilities ;  Total (Counterparty sectors), unit: $M 
+debt <- readabs::read_abs(series_id = "A3424499W") 
+tmp.debt <- xts::xts(debt$value, debt$date) 
+debt.pc <- tmp.debt / pop / tmp.gdp.deflator
 
-# quarterly, seasonally adjusted, Total taxes, unit: $M
-# 1959-09-01 to 2022-12-01 --> 254 quarters 
-# from table: 5206022_Taxes A2302794K
-
+# ------------------------------------------------------------------------------
+# Stock price 
+# ------------------------------------------------------------------------------
+AORD <- read.csv("https://www.dropbox.com/s/hj4d4z4ioh3a14o/AORD.csv?dl=1")
+AORD$Date <- as.Date(as.character(AORD$Date),format="%m/%d/%Y")
+AORD$Close <- as.numeric(AORD$Close)
+tmp.aord <- xts::xts(AORD$Close, AORD$Date) 
+aord_q <- xts::to.quarterly(tmp.aord,OHLC=FALSE)
+aord <- as.numeric(aord_q) / tmp.gdp.deflator
+# ------------------------------------------------------------------------------
 ```
 
+
+```{r wrangling data}
+#| echo: false
+#| message: false
+#| warning: false
+
+# all in real per capita terms except inflation and interest 
+df <- as.data.frame(merge(gdp_real_pc,
+            log(gov_spend_pc),
+            log(gov_revenue_pc),
+            log(debt.pc),
+            inflation))
+df <- na.omit(df)[8:139,] # truncate data from 1990 Q1 to 2022 Q4 
+colnames(df) <- c("GDP","Spending","Revenue","Debt","Inflation")
+df$Interest <- as.numeric(as.character(interest))
+df$Stock[46:132] <- log(as.numeric(aord))
+```
+
+@tbl-irf provides summary statistics of wrangled data. 
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: tbl-irf
+#| tbl-cap: Summary Statistics
+
+s <- matrix(nrow = 7,ncol = 5)
+colnames(s) <- c("N","Mean","St.Dev.", "Min","Max")
+rownames(s) <- colnames(df)
+
+for (i in 1:7){
+    s[i,1] <- length(na.omit(df[,i])) 
+    s[i,2] <- mean(na.omit(df[,i])) 
+    s[i,3] <- sd(na.omit(df[,i])) 
+    s[i,4] <- min(na.omit(df[,i])) 
+    s[i,5] <- max(na.omit(df[,i])) 
+  }
+
+knitr::kable(s, digits = 3,index=TRUE)
+```
+
+Plots of transformed data are shown as: @fig-line-plot.
 
 ```{r data visualization}
-plot.ts(gdp_real_pc,main="Log Quarterly Real GDP Per Capita")
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-line-plot
+#| fig-cap: "Time Series Plots"
+
+dates <- as.Date(rownames(df),format = "%Y-%m-%d")
+col <- c("#009999","#009999", "#009999", "#009999", "#9933CC", "#9933CC", "#990000")
+par(mfrow=c(4,2), mar=c(2,2,2,2))
+for (i in 1:length(colnames(df))){
+  plot(dates, y = df[,i], type = "l", 
+       main = paste(colnames(df)[i]), ylab = "", xlab = "",
+       col = col[i], lwd = 2.5,
+       ylim = c(min(na.omit(df[,i])),max(na.omit(df[,i]))))
+}
+
 ```
 
+While logarithms of real per capita GDP and government expenditure depict upward trend, government revenue shows seasonal patterns. Public debt has a significant drop starting end of 1990s. Interest rate has a downward trend while stock prices exhibiting downward trend after the Global Financial Crisis (GFC).
 
 # Methodology
 
-Structural vector autoregression (SVAR) models can be used to estimate the impact of taxation shocks in Australian economy. The benchmark model is defined as: 
+Bayesian Structural vector autoregression (SVAR) models can be used to estimate the impact of taxation shocks in Australian economy. The benchmark model is defined as: 
+
 \begin{align}
 B_0Y_t = b_0 + \sum_{i=1}^{p}B_{i}Y_{t-i}+u_t 
 \end{align}
@@ -97,7 +172,9 @@ B_0Y_t = b_0 + \sum_{i=1}^{p}B_{i}Y_{t-i}+u_t
 u_t|Y_{t-1}\sim iid(0_N,I_N)
 \end{align}
 
-$Y_t$ is $N\times1$ matrix of endogeneius variables, N represents the number of endogeneous variables and p is the number of lags, $B_0$ is $N\times N$ matrix capturing contemporaneous relationships between variables, and $u_t$ is $N\times1$ vector conditionally on $Y_{t-1}$ orthogonal structural shocks. 
+$Y_t$ is $N\times1$ matrix of endogenous variables,N represents the number of endogeneous variables and p is the number of lags. $B_0$ is $N\times N$ matrix capturing contemporaneous relationships between variables, and $u_t$ is $N\times1$ vector conditionally on $Y_{t-1}$ orthogonal structural shocks. 
+
+In particular, in this model, $Y_t$ contains seven variables ordered as : (1) real per-capita GDP ($G_t$), (2) real per-capita government expenditure ($E_t$), (3) real per-capita government revenue ($R_t$), (4) real per-capita public debt ($D_t$), (5) inflation ($i_t$), (6) cash rate target (r_t), (7) real stock price ($S_t$).
 
 The reduced form representation is: 
 \begin{align}
@@ -112,6 +189,42 @@ The covariance matrix of $\epsilon_t$ can be written as:
 \Sigma=B_0^{-1}{B_0^{-1}}^{'}
 \end{align}
 
+
 # Preliminary Results
 
+ACF Plots as in @fig-acf-plot shown significant non-zero autocorrelation for at least 15 lags of variables except Inflation. PACF Plots as @fig-pacf-plot indicate significant and strong memory at the first lag of variables except Inflation, of which the first lag is also statistically significant.  
+
+```{r data properties: ACF}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-acf-plot
+#| fig-cap: "ACF Plots"
+par(mfrow=c(4,2), mar=c(2,2,2,2))
+for (j in 1:length(colnames(df))){
+  acf(na.omit(df[,j]),main="")
+  title(main = paste(colnames(df)[j]), line = 1)
+}
+```
+
+```{r data properties: PACF}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-pacf-plot
+#| fig-cap: "Partial ACF Plots"
+par(mfrow=c(4,2), mar=c(2,2,2,2))
+for (j in 1:length(colnames(df))){
+  pacf(na.omit(df[,j]),main="")
+  title(main = paste(colnames(df)[j]), line = 1)
+}
+```
+
+
 # References {.unnumbered}
+
+Mountford and Uhlig (2009)
+
+Afonso and Sousa (2011)
+
+Charziantoniou et al. (2013)
