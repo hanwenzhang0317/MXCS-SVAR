@@ -8,26 +8,26 @@ execute:
 bibliography: references.bib
 ---
 
-> **Abstract.** This is a reserarch proposal, the project is about measuring fiscal policy effects using Bayesian Structural Vector Autoregression(SVAR) in Australian Economy. Inpulse responses of stock prices and macroeconomic aggregated are expected to be investigated. 
+> **Abstract.** This is a reserarch proposal, the project is about measuring fiscal policy effects using Bayesian Structural Vector Autoregression (SVAR) in Australian Economy. Inpulse responses of stock prices and macroeconomic aggregates will be investigated. 
 >
 > **Keywords.** fiscal policy shock, SVAR, tax shocks, stock price, impulse response function
 
 # Motivation 
 
-This research project will investigate the effects on fiscal policy. How does tax cuts affect the economy? Will tax reductions boost stock market? These questions are crucial to understanding of dynamic economics and the stimulus policy-making process, and are aimed to be answered in the background of Australian Economy.  
+This research project will investigate the effects on fiscal policy. How does tax cuts affect the economy? Will tax reductions boost stock market? These questions are crucial to the understanding of dynamic economics and the stimulus policy-making process, and are aimed to be answered in the background of Australian Economy in this project.  
 
-Effects of tax shocks on output has been investigated heavily in the previous literature. For example, Mountford and Uhlig (2009) found an unanticipated deficit-financed tax cut could stimulate the economy in terms of fiscal policy, using sign restrictions. They also revealed that investment falls when tax increases and government spending increases.
+Effects of tax shocks on output has been investigated heavily in the previous literature. For example, Mountford and Uhlig (2009) found an unanticipated deficit-financed tax cut could stimulate the economy as a fiscal policy, using sign restrictions. They also revealed that investment falls when tax increases and government spending increases as investigated by Blanchard and Perotti (2002). Romer and Romer (2007) suggested exogeneous tax changes could end with large difference. 
 
-While fiscal policy shocks have evidence of playing a role in affecting output, the effects on stock prices is ambiguous. Afonso and Sousa (2011) illustrated government spending shocks have negative effect on stock prices, whereas expansionary tax shocks are related to increase of stock prices. However, Charziantoniou et al. (2013) argued there was no monetary policy indicators in Afonso and Sousa (2011), these authors also suggested over 1991 to 2010, on real and financial variables were not affected by government spending shocks significantly. 
+While fiscal policy shocks have evidence of playing a role in affecting output, the effects on stock prices is ambiguous. Afonso and Sousa (2011) illustrated government spending shocks have negative effect on stock prices, whereas expansionary tax shocks are related to increase of stock prices. However, Charziantoniou et al. (2013) argued there was no monetary policy indicators in Afonso and Sousa (2011), these authors suggested over 1991 to 2010, real and financial variables were not affected by government spending shocks significantly. 
 
-Although there is an unignorable amount of literature regarding the effects of fiscal policy, among which a large proportion of data analysed is based on US market. This paper aims to fill the lack of such literature in Australian economy.  
+Although there is an unignorable amount of literature regarding the effects of fiscal policy, among which a large proportion of data analysed is based on US economy. This paper aims to fill the lack of such literature about Australian economy.  
 
 # Data 
 The variables that are of interest include GDP, total government expenditure, total government revenue, cash rate target, inflation, public debt and stock prices. Those economic variables were collected from Reserve Bank of Australia (RBA) and Australian Bureau of Statistics (ABS), spanning quarterly from 1990 Q1 to 2022 Q4. 
 
-Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studies into detail in the future research. All Ordinaries data started from 2001-04-19, however matching the date need to truncate 10 years of observations, which might result in a small sample size, thus, sub-samples would be considered to be implemented, for example, there might be one sample containing all the variables from 1990 to 2022 except stock prices to investigate the effects on economy. Inflation and cash rate target are introduced in the model as controls. 
+Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studied into detail in the future research. All Ordinaries data started from 2001-04-19, matching the date need to truncate 10 years of observations, which will result in a smaller sample size, thus, sub-samples would be considered to be implemented, for example, there could be one sample containing all the variables from 1990 to 2022 except stock prices to investigate the effects on economy. Inflation and cash rate target are also introduced in the model as controls. 
 
-Variables are transformed into log real per-capita terms except inflation and cash rate target to save computing power. In this stage, only the sample including all variables ranging from 2001 Q2 to 2022 Q4 is considered in the methodology section later. 
+Variables are transformed into real per-capita terms and compute logarithms as Mumtaz and Theodoridis (2020), except inflation and cash rate target. In this stage, only the sample including all variables ranging from 2001 Q2 to 2022 Q4 is considered in the following section.
 
 ```{r collecting data of interest}
 #| echo: false
@@ -104,18 +104,18 @@ aord <- as.numeric(aord_q) / tmp.gdp.deflator
 #| warning: false
 
 # all in real per capita terms except inflation and interest 
-df <- as.data.frame(merge(gdp_real_pc,
+df.o <- as.data.frame(merge(gdp_real_pc,
             log(gov_spend_pc),
             log(gov_revenue_pc),
             log(debt.pc),
             inflation))
-df <- na.omit(df)[8:139,] # truncate data from 1990 Q1 to 2022 Q4 
-colnames(df) <- c("GDP","Spending","Revenue","Debt","Inflation")
-df$Interest <- as.numeric(as.character(interest))
-df$Stock[46:132] <- log(as.numeric(aord))
+df.o <- na.omit(df.o)[8:139,] # truncate data from 1990 Q1 to 2022 Q4 
+colnames(df.o) <- c("GDP","Spending","Revenue","Debt","Inflation")
+df.o$Interest <- as.numeric(as.character(interest))
+df.o$Stock[46:132] <- log(as.numeric(aord))
 ```
 
-@tbl-irf provides summary statistics of wrangled data. 
+@tbl-irf provides summary statistics of wrangled datan from 2001Q2 to 2022Q4. 
 ```{r}
 #| echo: false
 #| message: false
@@ -123,9 +123,10 @@ df$Stock[46:132] <- log(as.numeric(aord))
 #| label: tbl-irf
 #| tbl-cap: Summary Statistics
 
+df <- na.omit(df.o)
 s <- matrix(nrow = 7,ncol = 5)
 colnames(s) <- c("N","Mean","St.Dev.", "Min","Max")
-rownames(s) <- colnames(df)
+rownames(s) <- colnames(df.o)
 
 for (i in 1:7){
     s[i,1] <- length(na.omit(df[,i])) 
@@ -148,7 +149,7 @@ Plots of transformed data are shown as: @fig-line-plot.
 #| fig-cap: "Time Series Plots"
 
 dates <- as.Date(rownames(df),format = "%Y-%m-%d")
-col <- c("#009999","#009999", "#009999", "#009999", "#9933CC", "#9933CC", "#990000")
+col <- c("#009999","#009999", "#009999", "#009999", "#9933CC", "#9933CC", "#009999")
 par(mfrow=c(4,2), mar=c(2,2,2,2))
 for (i in 1:length(colnames(df))){
   plot(dates, y = df[,i], type = "l", 
@@ -159,11 +160,11 @@ for (i in 1:length(colnames(df))){
 
 ```
 
-While logarithms of real per capita GDP and government expenditure depict upward trend, government revenue shows seasonal patterns. Public debt has a significant drop starting end of 1990s. Interest rate has a downward trend while stock prices exhibiting downward trend after the Global Financial Crisis (GFC).
+While logarithms of real per capita GDP and government expenditure depict upward trend, government revenue shows increasing trend with seasonal patterns. Public debt has a significant drop starting end of 1990s. Interest rate has a downward trend while stock prices exhibiting downward trend after the Global Financial Crisis (GFC).
 
 # Methodology
 
-Bayesian Structural vector autoregression (SVAR) models can be used to estimate the impact of taxation shocks in Australian economy. The benchmark model is defined as: 
+Bayesian Structural vector autoregression (SVAR) models to capture the dynamic and contemporaneous relationships between variables. The benchmark model is defined as: 
 
 \begin{align}
 B_0Y_t = b_0 + \sum_{i=1}^{p}B_{i}Y_{t-i}+u_t 
@@ -175,6 +176,18 @@ u_t|Y_{t-1}\sim iid(0_N,I_N)
 $Y_t$ is $N\times1$ matrix of endogenous variables,N represents the number of endogeneous variables and p is the number of lags. $B_0$ is $N\times N$ matrix capturing contemporaneous relationships between variables, and $u_t$ is $N\times1$ vector conditionally on $Y_{t-1}$ orthogonal structural shocks. 
 
 In particular, in this model, $Y_t$ contains seven variables ordered as : (1) real per-capita GDP ($G_t$), (2) real per-capita government expenditure ($E_t$), (3) real per-capita government revenue ($R_t$), (4) real per-capita public debt ($D_t$), (5) inflation ($i_t$), (6) cash rate target (r_t), (7) real stock price ($S_t$).
+
+\begin{align}
+Y_t=\begin{pmatrix} 
+\\ G_t
+\\ E_t
+\\ R_t 
+\\ D_t
+\\ i_t
+\\ r_t
+\\ S_t
+\end{pmatrix}
+\end{align}
 
 The reduced form representation is: 
 \begin{align}
@@ -192,7 +205,7 @@ The covariance matrix of $\epsilon_t$ can be written as:
 
 # Preliminary Results
 
-ACF Plots as in @fig-acf-plot shown significant non-zero autocorrelation for at least 15 lags of variables except Inflation. PACF Plots as @fig-pacf-plot indicate significant and strong memory at the first lag of variables except Inflation, of which the first lag is also statistically significant.  
+ACF Plots as in @fig-acf-plot show non-zero autocorrelations for at least 15 lags of variables except Inflation. PACF Plots as @fig-pacf-plot indicate significant and strong memory at the first lag of variables except Inflation, of, for which the first lag is also statistically significant but not strong.  
 
 ```{r data properties: ACF}
 #| echo: false
@@ -220,11 +233,77 @@ for (j in 1:length(colnames(df))){
 }
 ```
 
+Augmented Dickey-Fuller Test can be performed to test for stationarity under the null hypothesis of unit-root non-stationary, the results are shown as @tbl-adf, from which we do not reject the null and conclude that all variables are unit-root non-stationary.  
+
+```{r test for stationarity}
+#| echo: true 
+#| message: false
+#| warning: false
+#| label: tbl-adf
+#| tbl-cap: ADF test results 
+
+library(tseries)
+adf <- as.data.frame(matrix(nrow=7,ncol=3,NA))
+rownames(adf) <- colnames(df)
+colnames(adf) <- c("Dickey-Fuller","Lag order", "p-value")
+
+for (i in 1: ncol(df)){
+  adf[i,"Dickey-Fuller"] <-  round(as.numeric(adf.test(df[,i])[1]),3)
+  adf[i,"Lag order"]<-  as.numeric(adf.test(df[,i])[2])
+  adf[i,"p-value"] <-  round(as.numeric(adf.test(df[,i])[4]),3)
+}
+
+knitr::kable(adf, index=TRUE)
+```
+
+Take the first difference and run the Augmented Dickey-Fuller Test again, it is sensible to conclude that variables except public debt are integrated of order 1 as in @tbl-adf-diff. Public debt is integrated with order 2, since its second-order difference is stationary as @tbl-adf-diff2.  
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: tbl-adf-diff
+#| tbl-cap: First difference ADF test results 
+adf.diff <- as.data.frame(matrix(nrow=7,ncol=3,NA))
+rownames(adf.diff) <- colnames(df)
+colnames(adf.diff) <- c("Dickey-Fuller","Lag order", "p-value")
+
+for (i in 1: ncol(df)){
+  adf.diff[i,"Dickey-Fuller"] <-  round(as.numeric(adf.test(diff(df[,i]))[1]),3)
+  adf.diff[i,"Lag order"]<-  as.numeric(adf.test(diff(df[,i]))[2])
+  adf.diff[i,"p-value"] <-  round(as.numeric(adf.test(diff(df[,i]))[4]),3)
+}
+
+knitr::kable(adf.diff, index=TRUE)
+
+```
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: tbl-adf-diff2
+#| tbl-cap: Second difference ADF test results 
+adf.diff2 <- as.data.frame(matrix(nrow=1,ncol=3,NA))
+rownames(adf.diff2) <- c("Debt")
+colnames(adf.diff2) <- c("Dickey-Fuller","Lag order", "p-value")
+adf.diff2[,"Dickey-Fuller"] <-  round(as.numeric(adf.test(diff(diff(df$Debt)))[1]),3)
+adf.diff2[,"Lag order"]<-  as.numeric(adf.test(diff(diff(df$Debt)))[2])
+adf.diff2[,"p-value"] <-  round(as.numeric(adf.test(diff(diff(df$Debt)))[4]),3)
+knitr::kable(adf.diff2, index=TRUE)
+```
+
 
 # References {.unnumbered}
 
-Mountford and Uhlig (2009)
+Afonso, A., R. M. Sousa (2011): What are the effects of Fiscal policy on asset markets? *Economic Modelling*, 28, 1871-1890.
 
-Afonso and Sousa (2011)
+Blanchard O, Perotti R. (2002). An empirical characterization of the dynamic effects of changes in government spending and taxes on output. *Quarterly Journal of Economics*. 117(4): 1329–1368.
 
-Charziantoniou et al. (2013)
+Chatziantoniou, I., D. Duffy, G. Filis (2013): Stock market response to monetary and Fiscal policy shocks: Multi-country evidence, *Economic Modelling*, 30, 754-769.
+
+Mountford, A., H. Uhlig (2009): What are the effects of Fiscal policy shocks? *Journal of Applied Econometrics*, 24, 960-992.
+
+Mumtaz, H., Theodoridis, K. (2020). Fiscal policy shocks and stock prices in the United States, *European Economic Review*, Volume 129
+
+Romer, C.D. and Romer, D.H. (2007) The Macroeconomic Effects of Tax Changes: Estimates Based on a New Measure of Fiscal Shocks. *NBER Working Paper No. 13264, National Bureau of Economic Research, Cambridge.*

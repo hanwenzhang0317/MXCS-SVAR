@@ -21,6 +21,69 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1.6em;
   vertical-align: middle;
 }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
@@ -124,28 +187,28 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 <blockquote class="blockquote">
-<p><strong>Abstract.</strong> This is a reserarch proposal, the project is about measuring fiscal policy effects using Bayesian Structural Vector Autoregression(SVAR) in Australian Economy. Inpulse responses of stock prices and macroeconomic aggregated are expected to be investigated.</p>
+<p><strong>Abstract.</strong> This is a reserarch proposal, the project is about measuring fiscal policy effects using Bayesian Structural Vector Autoregression (SVAR) in Australian Economy. Inpulse responses of stock prices and macroeconomic aggregates will be investigated.</p>
 <p><strong>Keywords.</strong> fiscal policy shock, SVAR, tax shocks, stock price, impulse response function</p>
 </blockquote>
 <section id="motivation" class="level1">
 <h1>Motivation</h1>
-<p>This research project will investigate the effects on fiscal policy. How does tax cuts affect the economy? Will tax reductions boost stock market? These questions are crucial to understanding of dynamic economics and the stimulus policy-making process, and are aimed to be answered in the background of Australian Economy.</p>
-<p>Effects of tax shocks on output has been investigated heavily in the previous literature. For example, Mountford and Uhlig (2009) found an unanticipated deficit-financed tax cut could stimulate the economy in terms of fiscal policy, using sign restrictions. They also revealed that investment falls when tax increases and government spending increases.</p>
-<p>While fiscal policy shocks have evidence of playing a role in affecting output, the effects on stock prices is ambiguous. Afonso and Sousa (2011) illustrated government spending shocks have negative effect on stock prices, whereas expansionary tax shocks are related to increase of stock prices. However, Charziantoniou et al.&nbsp;(2013) argued there was no monetary policy indicators in Afonso and Sousa (2011), these authors also suggested over 1991 to 2010, on real and financial variables were not affected by government spending shocks significantly.</p>
-<p>Although there is an unignorable amount of literature regarding the effects of fiscal policy, among which a large proportion of data analysed is based on US market. This paper aims to fill the lack of such literature in Australian economy.</p>
+<p>This research project will investigate the effects on fiscal policy. How does tax cuts affect the economy? Will tax reductions boost stock market? These questions are crucial to the understanding of dynamic economics and the stimulus policy-making process, and are aimed to be answered in the background of Australian Economy in this project.</p>
+<p>Effects of tax shocks on output has been investigated heavily in the previous literature. For example, Mountford and Uhlig (2009) found an unanticipated deficit-financed tax cut could stimulate the economy as a fiscal policy, using sign restrictions. They also revealed that investment falls when tax increases and government spending increases as investigated by Blanchard and Perotti (2002). Romer and Romer (2007) suggested exogeneous tax changes could end with large difference.</p>
+<p>While fiscal policy shocks have evidence of playing a role in affecting output, the effects on stock prices is ambiguous. Afonso and Sousa (2011) illustrated government spending shocks have negative effect on stock prices, whereas expansionary tax shocks are related to increase of stock prices. However, Charziantoniou et al.&nbsp;(2013) argued there was no monetary policy indicators in Afonso and Sousa (2011), these authors suggested over 1991 to 2010, real and financial variables were not affected by government spending shocks significantly.</p>
+<p>Although there is an unignorable amount of literature regarding the effects of fiscal policy, among which a large proportion of data analysed is based on US economy. This paper aims to fill the lack of such literature about Australian economy.</p>
 </section>
 <section id="data" class="level1">
 <h1>Data</h1>
 <p>The variables that are of interest include GDP, total government expenditure, total government revenue, cash rate target, inflation, public debt and stock prices. Those economic variables were collected from Reserve Bank of Australia (RBA) and Australian Bureau of Statistics (ABS), spanning quarterly from 1990 Q1 to 2022 Q4.</p>
-<p>Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studies into detail in the future research. All Ordinaries data started from 2001-04-19, however matching the date need to truncate 10 years of observations, which might result in a small sample size, thus, sub-samples would be considered to be implemented, for example, there might be one sample containing all the variables from 1990 to 2022 except stock prices to investigate the effects on economy. Inflation and cash rate target are introduced in the model as controls.</p>
-<p>Variables are transformed into log real per-capita terms except inflation and cash rate target to save computing power. In this stage, only the sample including all variables ranging from 2001 Q2 to 2022 Q4 is considered in the methodology section later.</p>
+<p>Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studied into detail in the future research. All Ordinaries data started from 2001-04-19, matching the date need to truncate 10 years of observations, which will result in a smaller sample size, thus, sub-samples would be considered to be implemented, for example, there could be one sample containing all the variables from 1990 to 2022 except stock prices to investigate the effects on economy. Inflation and cash rate target are also introduced in the model as controls.</p>
+<p>Variables are transformed into real per-capita terms and compute logarithms as Mumtaz and Theodoridis (2020), except inflation and cash rate target. In this stage, only the sample including all variables ranging from 2001 Q2 to 2022 Q4 is considered in the following section.</p>
 <div class="cell">
 
 </div>
 <div class="cell">
 
 </div>
-<p><a href="#tbl-irf">Table&nbsp;1</a> provides summary statistics of wrangled data.</p>
+<p><a href="#tbl-irf">Table&nbsp;1</a> provides summary statistics of wrangled datan from 2001Q2 to 2022Q4.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="tbl-irf" class="anchored">
@@ -164,51 +227,51 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">GDP</td>
-<td style="text-align: right;">132</td>
-<td style="text-align: right;">5.131</td>
-<td style="text-align: right;">0.164</td>
-<td style="text-align: right;">4.813</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">5.235</td>
+<td style="text-align: right;">0.072</td>
+<td style="text-align: right;">5.071</td>
 <td style="text-align: right;">5.356</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Spending</td>
-<td style="text-align: right;">132</td>
-<td style="text-align: right;">3.472</td>
-<td style="text-align: right;">0.197</td>
-<td style="text-align: right;">3.119</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">3.587</td>
+<td style="text-align: right;">0.130</td>
+<td style="text-align: right;">3.381</td>
 <td style="text-align: right;">3.846</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Revenue</td>
-<td style="text-align: right;">132</td>
-<td style="text-align: right;">5.024</td>
-<td style="text-align: right;">0.173</td>
-<td style="text-align: right;">4.654</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">5.131</td>
+<td style="text-align: right;">0.088</td>
+<td style="text-align: right;">4.925</td>
 <td style="text-align: right;">5.301</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Debt</td>
-<td style="text-align: right;">132</td>
-<td style="text-align: right;">4.660</td>
-<td style="text-align: right;">0.664</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">4.724</td>
+<td style="text-align: right;">0.794</td>
 <td style="text-align: right;">3.549</td>
 <td style="text-align: right;">5.900</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Inflation</td>
-<td style="text-align: right;">132</td>
-<td style="text-align: right;">0.650</td>
-<td style="text-align: right;">0.617</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">0.653</td>
+<td style="text-align: right;">0.547</td>
 <td style="text-align: right;">-1.923</td>
-<td style="text-align: right;">3.704</td>
+<td style="text-align: right;">2.098</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Interest</td>
-<td style="text-align: right;">132</td>
-<td style="text-align: right;">4.605</td>
-<td style="text-align: right;">2.906</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">3.372</td>
+<td style="text-align: right;">2.006</td>
 <td style="text-align: right;">0.100</td>
-<td style="text-align: right;">16.750</td>
+<td style="text-align: right;">7.250</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Stock</td>
@@ -234,11 +297,11 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p>While logarithms of real per capita GDP and government expenditure depict upward trend, government revenue shows seasonal patterns. Public debt has a significant drop starting end of 1990s. Interest rate has a downward trend while stock prices exhibiting downward trend after the Global Financial Crisis (GFC).</p>
+<p>While logarithms of real per capita GDP and government expenditure depict upward trend, government revenue shows increasing trend with seasonal patterns. Public debt has a significant drop starting end of 1990s. Interest rate has a downward trend while stock prices exhibiting downward trend after the Global Financial Crisis (GFC).</p>
 </section>
 <section id="methodology" class="level1">
 <h1>Methodology</h1>
-<p>Bayesian Structural vector autoregression (SVAR) models can be used to estimate the impact of taxation shocks in Australian economy. The benchmark model is defined as:</p>
+<p>Bayesian Structural vector autoregression (SVAR) models to capture the dynamic and contemporaneous relationships between variables. The benchmark model is defined as:</p>
 <p><span class="math display">\[\begin{align}
 B_0Y_t = b_0 + \sum_{i=1}^{p}B_{i}Y_{t-i}+u_t
 \end{align}\]</span> <span class="math display">\[\begin{align}
@@ -246,6 +309,17 @@ u_t|Y_{t-1}\sim iid(0_N,I_N)
 \end{align}\]</span></p>
 <p><span class="math inline">\(Y_t\)</span> is <span class="math inline">\(N\times1\)</span> matrix of endogenous variables,N represents the number of endogeneous variables and p is the number of lags. <span class="math inline">\(B_0\)</span> is <span class="math inline">\(N\times N\)</span> matrix capturing contemporaneous relationships between variables, and <span class="math inline">\(u_t\)</span> is <span class="math inline">\(N\times1\)</span> vector conditionally on <span class="math inline">\(Y_{t-1}\)</span> orthogonal structural shocks.</p>
 <p>In particular, in this model, <span class="math inline">\(Y_t\)</span> contains seven variables ordered as : (1) real per-capita GDP (<span class="math inline">\(G_t\)</span>), (2) real per-capita government expenditure (<span class="math inline">\(E_t\)</span>), (3) real per-capita government revenue (<span class="math inline">\(R_t\)</span>), (4) real per-capita public debt (<span class="math inline">\(D_t\)</span>), (5) inflation (<span class="math inline">\(i_t\)</span>), (6) cash rate target (r_t), (7) real stock price (<span class="math inline">\(S_t\)</span>).</p>
+<p><span class="math display">\[\begin{align}
+Y_t=\begin{pmatrix}
+\\ G_t
+\\ E_t
+\\ R_t
+\\ D_t
+\\ i_t
+\\ r_t
+\\ S_t
+\end{pmatrix}
+\end{align}\]</span></p>
 <p>The reduced form representation is: <span class="math display">\[\begin{align}
 Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 \end{align}\]</span> <span class="math display">\[\begin{align}
@@ -257,7 +331,7 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 </section>
 <section id="preliminary-results" class="level1">
 <h1>Preliminary Results</h1>
-<p>ACF Plots as in <a href="#fig-acf-plot">Figure&nbsp;2</a> shown significant non-zero autocorrelation for at least 15 lags of variables except Inflation. PACF Plots as <a href="#fig-pacf-plot">Figure&nbsp;3</a> indicate significant and strong memory at the first lag of variables except Inflation, of which the first lag is also statistically significant.</p>
+<p>ACF Plots as in <a href="#fig-acf-plot">Figure&nbsp;2</a> show non-zero autocorrelations for at least 15 lags of variables except Inflation. PACF Plots as <a href="#fig-pacf-plot">Figure&nbsp;3</a> indicate significant and strong memory at the first lag of variables except Inflation, of, for which the first lag is also statistically significant but not strong.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-acf-plot" class="quarto-figure quarto-figure-center anchored">
@@ -278,12 +352,176 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 </div>
 </div>
 </div>
+<p>Augmented Dickey-Fuller Test can be performed to test for stationarity under the null hypothesis of unit-root non-stationary, the results are shown as <a href="#tbl-adf">Table&nbsp;2</a>, from which we do not reject the null and conclude that all variables are unit-root non-stationary.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tseries)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>adf <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">matrix</span>(<span class="at">nrow=</span><span class="dv">7</span>,<span class="at">ncol=</span><span class="dv">3</span>,<span class="cn">NA</span>))</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(adf) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(df)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(adf) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Dickey-Fuller"</span>,<span class="st">"Lag order"</span>, <span class="st">"p-value"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span> <span class="fu">ncol</span>(df)){</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  adf[i,<span class="st">"Dickey-Fuller"</span>] <span class="ot">&lt;-</span>  <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">adf.test</span>(df[,i])[<span class="dv">1</span>]),<span class="dv">3</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  adf[i,<span class="st">"Lag order"</span>]<span class="ot">&lt;-</span>  <span class="fu">as.numeric</span>(<span class="fu">adf.test</span>(df[,i])[<span class="dv">2</span>])</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  adf[i,<span class="st">"p-value"</span>] <span class="ot">&lt;-</span>  <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">adf.test</span>(df[,i])[<span class="dv">4</span>]),<span class="dv">3</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(adf, <span class="at">index=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="tbl-adf" class="anchored">
+<table class="table table-sm table-striped">
+<caption>Table&nbsp;2: ADF test results</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Dickey-Fuller</th>
+<th style="text-align: right;">Lag order</th>
+<th style="text-align: right;">p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">GDP</td>
+<td style="text-align: right;">-2.701</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.288</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Spending</td>
+<td style="text-align: right;">-1.933</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.604</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Revenue</td>
+<td style="text-align: right;">-2.577</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.339</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Debt</td>
+<td style="text-align: right;">-2.470</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.383</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Inflation</td>
+<td style="text-align: right;">-1.154</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.909</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Interest</td>
+<td style="text-align: right;">-2.177</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.503</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Stock</td>
+<td style="text-align: right;">-2.378</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.421</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>Take the first difference and run the Augmented Dickey-Fuller Test again, it is sensible to conclude that variables except public debt are integrated of order 1 as in <a href="#tbl-adf-diff">Table&nbsp;3</a>. Public debt is integrated with order 2, since its second-order difference is stationary as <a href="#tbl-adf-diff2">Table&nbsp;4</a>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="tbl-adf-diff" class="anchored">
+<table class="table table-sm table-striped">
+<caption>Table&nbsp;3: First difference ADF test results</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Dickey-Fuller</th>
+<th style="text-align: right;">Lag order</th>
+<th style="text-align: right;">p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">GDP</td>
+<td style="text-align: right;">-3.975</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.015</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Spending</td>
+<td style="text-align: right;">-4.178</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.010</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Revenue</td>
+<td style="text-align: right;">-5.593</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.010</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Debt</td>
+<td style="text-align: right;">-2.249</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.474</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Inflation</td>
+<td style="text-align: right;">-6.179</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.010</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Interest</td>
+<td style="text-align: right;">-3.482</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.049</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Stock</td>
+<td style="text-align: right;">-4.394</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.010</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div id="tbl-adf-diff2" class="anchored">
+<table class="table table-sm table-striped">
+<caption>Table&nbsp;4: Second difference ADF test results</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Dickey-Fuller</th>
+<th style="text-align: right;">Lag order</th>
+<th style="text-align: right;">p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Debt</td>
+<td style="text-align: right;">-5.525</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.01</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
 </section>
 <section id="references" class="level1 unnumbered">
 <h1 class="unnumbered">References</h1>
-<p>Mountford and Uhlig (2009)</p>
-<p>Afonso and Sousa (2011)</p>
-<p>Charziantoniou et al.&nbsp;(2013)</p>
+<p>Afonso, A., R. M. Sousa (2011): What are the effects of Fiscal policy on asset markets? <em>Economic Modelling</em>, 28, 1871-1890.</p>
+<p>Blanchard O, Perotti R. (2002). An empirical characterization of the dynamic effects of changes in government spending and taxes on output. <em>Quarterly Journal of Economics</em>. 117(4): 1329–1368.</p>
+<p>Chatziantoniou, I., D. Duffy, G. Filis (2013): Stock market response to monetary and Fiscal policy shocks: Multi-country evidence, <em>Economic Modelling</em>, 30, 754-769.</p>
+<p>Mountford, A., H. Uhlig (2009): What are the effects of Fiscal policy shocks? <em>Journal of Applied Econometrics</em>, 24, 960-992.</p>
+<p>Mumtaz, H., Theodoridis, K. (2020). Fiscal policy shocks and stock prices in the United States, <em>European Economic Review</em>, Volume 129</p>
+<p>Romer, C.D. and Romer, D.H. (2007) The Macroeconomic Effects of Tax Changes: Estimates Based on a New Measure of Fiscal Shocks. <em>NBER Working Paper No.&nbsp;13264, National Bureau of Economic Research, Cambridge.</em></p>
 
 
 </section>
