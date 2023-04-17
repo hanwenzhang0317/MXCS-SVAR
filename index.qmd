@@ -283,9 +283,10 @@ rownames(adf) <- colnames(df)
 colnames(adf) <- c("Dickey-Fuller","Lag order", "p-value")
 
 for (i in 1: ncol(df)){
-  adf[i,"Dickey-Fuller"] <-  round(as.numeric(adf.test(df[,i])[1]),3)
-  adf[i,"Lag order"]<-  as.numeric(adf.test(df[,i])[2])
-  adf[i,"p-value"] <-  round(as.numeric(adf.test(df[,i])[4]),3)
+  adf_tmp                 <- adf.test(df[,i])
+  adf[i,"Dickey-Fuller"]  <-  round(as.numeric(adf_tmp[1]),3)
+  adf[i,"Lag order"]      <-  as.numeric(adf_tmp[2])
+  adf[i,"p-value"]        <-  round(as.numeric(adf_tmp[4]),3)
 }
 
 knitr::kable(adf, index=TRUE)
