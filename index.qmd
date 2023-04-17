@@ -1,5 +1,5 @@
 ---
-title: "Fiscal policy shocks, aggregate economy and stock prices: evidence from australian economy"
+title: "Fiscal Policy Shocks, Aggregate Economy and Stock Prices: Evidence from the Australian Economy"
 author: "Hanwen Zhang"
 
 execute:
