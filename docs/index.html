@@ -8,7 +8,7 @@
 
 <meta name="author" content="Hanwen Zhang">
 
-<title>Macroeconometrics Research Report - Fiscal policy shocks, aggregate economy and stock prices: evidence from australian economy</title>
+<title>Macroeconometrics Research Report - Fiscal Policy Shocks, Aggregate Economy and Stock Prices: Evidence from the Australian Economy</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -165,7 +165,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Fiscal policy shocks, aggregate economy and stock prices: evidence from australian economy</h1>
+<h1 class="title">Fiscal Policy Shocks, Aggregate Economy and Stock Prices: Evidence from the Australian Economy</h1>
 </div>
 
 
@@ -203,7 +203,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </div>
 <p>The variables that are of interest include GDP, total government expenditure, total government revenue, cash rate target, inflation, public debt and stock prices. Those economic variables were collected from Reserve Bank of Australia (RBA) and Australian Bureau of Statistics (ABS), spanning quarterly from 1990 Q1 to 2022 Q4.</p>
-<p>Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studied into detail in the future research. All Ordinaries data started from 2001-04-19, matching the date need to truncate 10 years of observations, which will result in a smaller sample size, thus, sub-samples would be considered to be implemented, for example, there could be one sample containing all the variables from 1990 to 2022 except stock prices to investigate the effects on economy. Inflation and cash rate target are also introduced in the model as controls.(Plots of original data are shown in <a href="#fig-plot">Figure&nbsp;1</a>.)</p>
+<p>Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studied into detail in the future research. All Ordinaries data started from 2001-04-19, matching the date need to truncate 10 years of observations, which will result in a smaller sample size, thus, sub-samples would be considered to be implemented, for example, there could be one sample containing all the variables from 1990 to 2022 except stock prices to investigate the effects on economy. Inflation and cash rate target are also introduced in the model as controls.(Plots of original data are shown in: <a href="#fig-plot">Figure&nbsp;1</a>.)</p>
 <div class="cell">
 
 </div>
@@ -319,7 +319,8 @@ B_0Y_t = b_0 + \sum_{i=1}^{p}B_{i}Y_{t-i}+u_t
 \end{align}\]</span> <span class="math display">\[\begin{align}
 u_t|Y_{t-1}\sim iid(0_N,I_N)
 \end{align}\]</span></p>
-<p><span class="math inline">\(Y_t\)</span> is <span class="math inline">\(N\times1\)</span> matrix of endogenous variables, N represents the number of endogeneous variables and p is the number of lags. In particular, in this model, <span class="math inline">\(Y_t\)</span> contains 7 variables ordered as : (1) real GDP per-capita (<span class="math inline">\(G_t\)</span>), (2) real government expenditure per-capita (<span class="math inline">\(E_t\)</span>), (3) real government revenue per-capita (<span class="math inline">\(R_t\)</span>), (4) real public debt per-capita (<span class="math inline">\(D_t\)</span>), (5) inflation (<span class="math inline">\(i_t\)</span>), (6) cash rate target (r_t), (7) real stock price (<span class="math inline">\(S_t\)</span>).</p>
+<p><span class="math inline">\(Y_t\)</span> is <span class="math inline">\(N\times1\)</span> matrix of endogenous variables,N represents the number of endogeneous variables and p is the number of lags. <span class="math inline">\(B_0\)</span> is <span class="math inline">\(N\times N\)</span> matrix capturing contemporaneous relationships between variables, and <span class="math inline">\(u_t\)</span> is <span class="math inline">\(N\times1\)</span> vector conditionally on <span class="math inline">\(Y_{t-1}\)</span> orthogonal structural shocks.</p>
+<p>In particular, in this model, <span class="math inline">\(Y_t\)</span> contains seven variables ordered as : (1) real per-capita GDP (<span class="math inline">\(G_t\)</span>), (2) real per-capita government expenditure (<span class="math inline">\(E_t\)</span>), (3) real per-capita government revenue (<span class="math inline">\(R_t\)</span>), (4) real per-capita public debt (<span class="math inline">\(D_t\)</span>), (5) inflation (<span class="math inline">\(i_t\)</span>), (6) cash rate target (r_t), (7) real stock price (<span class="math inline">\(S_t\)</span>).</p>
 <p><span class="math display">\[\begin{align}
 Y_t=\begin{pmatrix}
 \\ G_t
@@ -331,7 +332,6 @@ Y_t=\begin{pmatrix}
 \\ S_t
 \end{pmatrix}
 \end{align}\]</span></p>
-<p><span class="math inline">\(B_0\)</span> is <span class="math inline">\(N\times N\)</span> matrix capturing contemporaneous relationships between variables. <span class="math inline">\(u_t\)</span> is <span class="math inline">\(N\times1\)</span> vector conditionally on <span class="math inline">\(Y_{t-1}\)</span> orthogonal or independent structural shocks. Isolating these shocks allow us to identify dynamic effects of uncorrelated shocks on variables <span class="math inline">\(y_t\)</span>.</p>
 <p>The reduced form representation is: <span class="math display">\[\begin{align}
 Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 \end{align}\]</span> <span class="math display">\[\begin{align}
@@ -340,7 +340,6 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 <p>The covariance matrix of <span class="math inline">\(\epsilon_t\)</span> can be written as: <span class="math display">\[\begin{align}
 \Sigma=B_0^{-1}{B_0^{-1}}^{'}
 \end{align}\]</span></p>
-<p>As <span class="math inline">\(\Sigma\)</span> is a symmetric matrix with <span class="math inline">\(N(N+1)/2\)</span> unique elements, <span class="math inline">\(B_0\)</span> has <span class="math inline">\(N^2\)</span> unknowns. <span class="math inline">\(B_0\)</span> and <span class="math inline">\(u_t\)</span> can’t be identified as the number of unknowns is more than equations. Restrictions exclusion (zero) restrictions, sign restrictions could be implemented, which would enable the assignment of economic meaning. Impulse response functions to orthogonal shocks computed from the SVAR model could be recognized as dynamic causal effects of exogenous shocks on economics variables. Forcast error variance decomposition provides information regarding the variability in forecast would also be conducted.</p>
 </section>
 <section id="preliminary-results" class="level1">
 <h1>Preliminary Results</h1>
@@ -373,12 +372,13 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(adf) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Dickey-Fuller"</span>,<span class="st">"Lag order"</span>, <span class="st">"p-value"</span>)</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span> <span class="fu">ncol</span>(df)){</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  adf[i,<span class="st">"Dickey-Fuller"</span>] <span class="ot">&lt;-</span>  <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">adf.test</span>(df[,i])[<span class="dv">1</span>]),<span class="dv">3</span>)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  adf[i,<span class="st">"Lag order"</span>]<span class="ot">&lt;-</span>  <span class="fu">as.numeric</span>(<span class="fu">adf.test</span>(df[,i])[<span class="dv">2</span>])</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  adf[i,<span class="st">"p-value"</span>] <span class="ot">&lt;-</span>  <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">adf.test</span>(df[,i])[<span class="dv">4</span>]),<span class="dv">3</span>)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(adf, <span class="at">index=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  adf_tmp                 <span class="ot">&lt;-</span> <span class="fu">adf.test</span>(df[,i])</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  adf[i,<span class="st">"Dickey-Fuller"</span>]  <span class="ot">&lt;-</span>  <span class="fu">round</span>(<span class="fu">as.numeric</span>(adf_tmp[<span class="dv">1</span>]),<span class="dv">3</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  adf[i,<span class="st">"Lag order"</span>]      <span class="ot">&lt;-</span>  <span class="fu">as.numeric</span>(adf_tmp[<span class="dv">2</span>])</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  adf[i,<span class="st">"p-value"</span>]        <span class="ot">&lt;-</span>  <span class="fu">round</span>(<span class="fu">as.numeric</span>(adf_tmp[<span class="dv">4</span>]),<span class="dv">3</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(adf, <span class="at">index=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div id="tbl-adf" class="anchored">
 <table class="table table-sm table-striped">
@@ -439,7 +439,7 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 </div>
 </div>
 </div>
-<p>Take the first difference and run the Augmented Dickey-Fuller Test again, it is sensible to conclude that variables except public debt are integrated of order 1 as in <a href="#tbl-adf-diff">Table&nbsp;3</a>. Public debt is integrated with order 2, since its second-order difference is stationary (at 5% significance level) as <a href="#tbl-adf-diff2">Table&nbsp;4</a>.</p>
+<p>Take the first difference and run the Augmented Dickey-Fuller Test again, it is sensible to conclude that variables except public debt are integrated of order 1 as in <a href="#tbl-adf-diff">Table&nbsp;3</a>. Public debt is integrated with order 2, since its second-order difference is stationary as <a href="#tbl-adf-diff2">Table&nbsp;4</a>.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="tbl-adf-diff" class="anchored">
