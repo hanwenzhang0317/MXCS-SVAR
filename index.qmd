@@ -8,7 +8,7 @@ execute:
 bibliography: references.bib
 ---
 
-> **Abstract.** This is a reserarch proposal, the project is about measuring fiscal policy effects using Bayesian Structural Vector Autoregression (SVAR) in Australian Economy. Inpulse responses of stock prices and macroeconomic aggregates will be investigated. 
+> **Abstract.** This is a reserarch proposal, the project is about measuring fiscal policy effects using Bayesian Structural Vector Autoregression (SVAR) in Australian Economy. Impulse responses of stock prices and macroeconomic aggregates will be investigated. 
 >
 > **Keywords.** fiscal policy shock, SVAR, tax shocks, stock price, impulse response function
 
@@ -210,7 +210,7 @@ u_t|Y_{t-1}\sim iid(0_N,I_N)
 
 $Y_t$ is $N\times1$ matrix of endogenous variables,N represents the number of endogeneous variables and p is the number of lags. $B_0$ is $N\times N$ matrix capturing contemporaneous relationships between variables, and $u_t$ is $N\times1$ vector conditionally on $Y_{t-1}$ orthogonal structural shocks. 
 
-In particular, in this model, $Y_t$ contains seven variables ordered as : (1) real per-capita GDP ($G_t$), (2) real per-capita government expenditure ($E_t$), (3) real per-capita government revenue ($R_t$), (4) real per-capita public debt ($D_t$), (5) inflation ($i_t$), (6) cash rate target (r_t), (7) real stock price ($S_t$).
+In particular, in this model, $Y_t$ contains seven variables ordered as : (1) real per-capita GDP ($G_t$), (2) real per-capita government expenditure ($E_t$), (3) real per-capita government revenue ($R_t$), (4) real per-capita public debt ($D_t$), (5) inflation ($i_t$), (6) cash rate target ($r_t$), (7) real stock price ($S_t$).
 
 \begin{align}
 Y_t=\begin{pmatrix} 
