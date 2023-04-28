@@ -198,7 +198,7 @@ for (i in 1:ncol(df)){
 ```
 
 
-# Data Stationarity
+# Preliminary Results 
 
 ACF Plots as in @fig-acf-plot show non-zero autocorrelations for at least 15 lags of variables except Inflation. PACF Plots as @fig-pacf-plot indicate significant and strong memory at the first lag of variables except Inflation, of, for which the first lag is also statistically significant but not strong.  
 
