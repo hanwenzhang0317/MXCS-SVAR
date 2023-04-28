@@ -8,7 +8,7 @@ execute:
 bibliography: references.bib
 ---
 
-> **Abstract.** This is a reserarch proposal, the project is about measuring fiscal policy effects using Bayesian Structural Vector Autoregression (SVAR) in Australian Economy. Inpulse responses of stock prices and macroeconomic aggregates will be investigated. 
+> **Abstract.** This is a reserarch proposal, the project is about measuring fiscal policy effects using Bayesian Structural Vector Autoregression (SVAR) in Australian Economy. Impulse responses of stock prices and macroeconomic aggregates will be investigated. 
 >
 > **Keywords.** fiscal policy shock, SVAR, tax shocks, stock price, impulse response function
 
@@ -94,7 +94,7 @@ aord <- as.numeric(aord_q) / tmp.gdp.deflator[168:length(tmp.gdp.deflator)]
 
 The variables that are of interest include GDP, total government expenditure, total government revenue, cash rate target, inflation, public debt and stock prices. Those economic variables were collected from Reserve Bank of Australia (RBA) and Australian Bureau of Statistics (ABS), spanning quarterly from 1990 Q1 to 2022 Q4. 
 
-Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studied into detail in the future research. All Ordinaries data started from 2001-04-19, matching the date need to truncate 10 years of observations, which will result in a smaller sample size, thus, sub-samples would be considered to be implemented, for example, there could be one sample containing all the variables from 1990 to 2022 except stock prices to investigate the effects on economy. Inflation and cash rate target are also introduced in the model as controls.(Plots of original data are shown in: @fig-plot.)
+Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studied into detail in the future research. All Ordinaries data started from 2001-04-19, matching the date need to truncate 10 years of observations, which will result in a smaller sample size, thus, sub-samples would be considered to be implemented, for example, there could be one sample containing all the variables from 1990 to 2022 except stock prices to investigate the effects on economy. Inflation and cash rate target are also introduced in the model as controls. Original data are plotted in: @fig-plot.
 
 ```{r in normial terms}
 # all in real per capita terms except inflation and interest 
@@ -116,7 +116,7 @@ df.o$Stock[46:132] <- as.numeric(aord_q)
 #| message: false
 #| warning: false
 #| label: fig-plot
-#| fig-cap: "Time Series Plots : in nominal prices"
+#| fig-cap: "Time Series Plots (in nominal prices)"
 
 dates <- as.Date(rownames(df.o),format = "%Y-%m-%d")
 names <- c("Nominal GDP $M","Government Spending $M","Government Revenue $M","Pubic Debt $M","Inflation (%)","Cash Rate Target (%)","Stock Price $")
@@ -151,13 +151,13 @@ df.log$Interest <- as.numeric(as.character(interest))
 df.log$Stock[46:132] <- log(as.numeric(aord))
 ```
 
-@tbl-irf provides summary statistics of wrangled datan from 2001Q2 to 2022Q4. 
+@tbl-irf provides statistics summary of all variables from 2001Q2 to 2022Q4. 
 ```{r}
 #| echo: false
 #| message: false
 #| warning: false
 #| label: tbl-irf
-#| tbl-cap: Summary Statistics
+#| tbl-cap: Statistics Summary 
 
 df <- na.omit(df.log)
 s <- matrix(nrow = 7,ncol = 5)
@@ -181,7 +181,7 @@ knitr::kable(s, digits = 3,index=TRUE)
 #| message: false
 #| warning: false
 #| label: fig-line-plot
-#| fig-cap: "Time Series Plots (Green lines are log transformation)"
+#| fig-cap: "Time Series Plots (green lines are log transformation)"
 
 dates <- as.Date(rownames(df),format = "%Y-%m-%d")
 col <- c("#009999","#009999", "#009999", "#009999", "#9933CC", "#9933CC", "#009999")
@@ -197,48 +197,8 @@ for (i in 1:ncol(df)){
 
 ```
 
-# Methodology
 
-Bayesian Structural vector autoregression (SVAR) models to capture the dynamic and contemporaneous relationships between variables. The benchmark model is defined as: 
-
-\begin{align}
-B_0Y_t = b_0 + \sum_{i=1}^{p}B_{i}Y_{t-i}+u_t 
-\end{align}
-\begin{align}
-u_t|Y_{t-1}\sim iid(0_N,I_N)
-\end{align}
-
-$Y_t$ is $N\times1$ matrix of endogenous variables,N represents the number of endogeneous variables and p is the number of lags. $B_0$ is $N\times N$ matrix capturing contemporaneous relationships between variables, and $u_t$ is $N\times1$ vector conditionally on $Y_{t-1}$ orthogonal structural shocks. 
-
-In particular, in this model, $Y_t$ contains seven variables ordered as : (1) real per-capita GDP ($G_t$), (2) real per-capita government expenditure ($E_t$), (3) real per-capita government revenue ($R_t$), (4) real per-capita public debt ($D_t$), (5) inflation ($i_t$), (6) cash rate target (r_t), (7) real stock price ($S_t$).
-
-\begin{align}
-Y_t=\begin{pmatrix} 
-\\ G_t
-\\ E_t
-\\ R_t 
-\\ D_t
-\\ i_t
-\\ r_t
-\\ S_t
-\end{pmatrix}
-\end{align}
-
-The reduced form representation is: 
-\begin{align}
-Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
-\end{align}
-\begin{align}
-\epsilon_t|Y_{t-1}\sim iid(0_N,\Sigma)
-\end{align}
-
-The covariance matrix of $\epsilon_t$ can be written as:
-\begin{align}
-\Sigma=B_0^{-1}{B_0^{-1}}^{'}
-\end{align}
-
-
-# Preliminary Results
+# Preliminary Results 
 
 ACF Plots as in @fig-acf-plot show non-zero autocorrelations for at least 15 lags of variables except Inflation. PACF Plots as @fig-pacf-plot indicate significant and strong memory at the first lag of variables except Inflation, of, for which the first lag is also statistically significant but not strong.  
 
@@ -260,7 +220,7 @@ for (j in 1:length(colnames(df))){
 #| message: false
 #| warning: false
 #| label: fig-pacf-plot
-#| fig-cap: "Partial ACF Plots"
+#| fig-cap: "PACF Plots"
 par(mfrow=c(4,2), mar=c(2,2,2,2))
 for (j in 1:length(colnames(df))){
   pacf(na.omit(df[,j]),main="")
@@ -329,6 +289,49 @@ adf.diff2[,"Lag order"]<-  as.numeric(adf.test(diff(diff(df$Debt)))[2])
 adf.diff2[,"p-value"] <-  round(as.numeric(adf.test(diff(diff(df$Debt)))[4]),3)
 knitr::kable(adf.diff2, index=TRUE)
 ```
+
+
+
+# Methodology
+
+Bayesian Structural vector autoregression (SVAR) models to capture the dynamic and contemporaneous relationships between variables. The benchmark model is defined as: 
+
+\begin{align}
+B_0Y_t = b_0 + \sum_{i=1}^{p}B_{i}Y_{t-i}+u_t 
+\end{align}
+\begin{align}
+u_t|Y_{t-1}\sim iid(0_N,I_N)
+\end{align}
+
+$Y_t$ is $N\times1$ matrix of endogenous variables,N represents the number of endogeneous variables and p is the number of lags. $B_0$ is $N\times N$ matrix capturing contemporaneous relationships between variables, and $u_t$ is $N\times1$ vector conditionally on $Y_{t-1}$ orthogonal structural shocks. 
+
+In particular, in this model, $Y_t$ contains seven variables ordered as : (1) real per-capita GDP ($G_t$), (2) real per-capita government expenditure ($E_t$), (3) real per-capita government revenue ($R_t$), (4) real per-capita public debt ($D_t$), (5) inflation ($i_t$), (6) cash rate target ($r_t$), (7) real stock price ($S_t$).
+
+\begin{align}
+Y_t=\begin{pmatrix} 
+\\ G_t
+\\ E_t
+\\ R_t 
+\\ D_t
+\\ i_t
+\\ r_t
+\\ S_t
+\end{pmatrix}
+\end{align}
+
+The reduced form representation is: 
+\begin{align}
+Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
+\end{align}
+\begin{align}
+\epsilon_t|Y_{t-1}\sim iid(0_N,\Sigma)
+\end{align}
+
+The covariance matrix of $\epsilon_t$ can be written as:
+\begin{align}
+\Sigma=B_0^{-1}{B_0^{-1}}^{'}
+\end{align}
+
 
 
 # References {.unnumbered}
