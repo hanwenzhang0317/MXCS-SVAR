@@ -154,8 +154,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <ul>
   <li><a href="#motivation" id="toc-motivation" class="nav-link active" data-scroll-target="#motivation">Motivation</a></li>
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
-  <li><a href="#methodology" id="toc-methodology" class="nav-link" data-scroll-target="#methodology">Methodology</a></li>
   <li><a href="#preliminary-results" id="toc-preliminary-results" class="nav-link" data-scroll-target="#preliminary-results">Preliminary Results</a></li>
+  <li><a href="#methodology" id="toc-methodology" class="nav-link" data-scroll-target="#methodology">Methodology</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -187,7 +187,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </header>
 
 <blockquote class="blockquote">
-<p><strong>Abstract.</strong> This is a reserarch proposal, the project is about measuring fiscal policy effects using Bayesian Structural Vector Autoregression (SVAR) in Australian Economy. Inpulse responses of stock prices and macroeconomic aggregates will be investigated.</p>
+<p><strong>Abstract.</strong> This is a reserarch proposal, the project is about measuring fiscal policy effects using Bayesian Structural Vector Autoregression (SVAR) in Australian Economy. Impulse responses of stock prices and macroeconomic aggregates will be investigated.</p>
 <p><strong>Keywords.</strong> fiscal policy shock, SVAR, tax shocks, stock price, impulse response function</p>
 </blockquote>
 <section id="motivation" class="level1">
@@ -202,8 +202,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="cell">
 
 </div>
-<p>The variables that are of interest include GDP, total government expenditure, total government revenue, cash rate target, inflation, public debt and stock prices. Those economic variables were collected from Reserve Bank of Australia (RBA) and Australian Bureau of Statistics (ABS), spanning quarterly from 1990 Q1 to 2022 Q4.</p>
-<p>Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studied into detail in the future research. All Ordinaries data started from 2001-04-19, matching the date need to truncate 10 years of observations, which will result in a smaller sample size, thus, sub-samples would be considered to be implemented, for example, there could be one sample containing all the variables from 1990 to 2022 except stock prices to investigate the effects on economy. Inflation and cash rate target are also introduced in the model as controls.(Plots of original data are shown in: <a href="#fig-plot">Figure&nbsp;1</a>.)</p>
+<p>The variables that are of interest include GDP, total government expenditure, total government revenue, cash rate target, inflation, public debt and stock prices. Those economic variables were collected from Reserve Bank of Australia (RBA) and Australian Bureau of Statistics (ABS), spanning quarterly from 1990 Q1 to 2022 Q4, including 132 observations.</p>
+<p>Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studied into detail in the future research. Inflation and cash rate target are also introduced in the model as controls. Original data are plotted in: <a href="#fig-plot">Figure&nbsp;1</a>.</p>
 <div class="cell">
 
 </div>
@@ -212,7 +212,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="fig-plot" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="index_files/figure-html/fig-plot-1.png" class="img-fluid figure-img" width="672"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;1: Time Series Plots : in nominal prices</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;1: Time Series Plots (in nominal prices)</figcaption><p></p>
 </figure>
 </div>
 </div>
@@ -222,12 +222,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="cell">
 
 </div>
-<p><a href="#tbl-irf">Table&nbsp;1</a> provides summary statistics of wrangled datan from 2001Q2 to 2022Q4.</p>
+<p><a href="#tbl-irf">Table&nbsp;1</a> provides statistics summary of all variables from 2001Q2 to 2022Q4.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="tbl-irf" class="anchored">
 <table class="table table-sm table-striped">
-<caption>Table&nbsp;1: Summary Statistics</caption>
+<caption>Table&nbsp;1: Statistics Summary</caption>
 <thead>
 <tr class="header">
 <th style="text-align: left;"></th>
@@ -241,59 +241,59 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">GDP</td>
-<td style="text-align: right;">87</td>
-<td style="text-align: right;">5.235</td>
-<td style="text-align: right;">0.072</td>
-<td style="text-align: right;">5.071</td>
+<td style="text-align: right;">132</td>
+<td style="text-align: right;">5.131</td>
+<td style="text-align: right;">0.164</td>
+<td style="text-align: right;">4.813</td>
 <td style="text-align: right;">5.356</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Spending</td>
-<td style="text-align: right;">87</td>
-<td style="text-align: right;">3.587</td>
-<td style="text-align: right;">0.130</td>
-<td style="text-align: right;">3.381</td>
+<td style="text-align: right;">132</td>
+<td style="text-align: right;">3.472</td>
+<td style="text-align: right;">0.197</td>
+<td style="text-align: right;">3.119</td>
 <td style="text-align: right;">3.846</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Revenue</td>
-<td style="text-align: right;">87</td>
-<td style="text-align: right;">5.131</td>
-<td style="text-align: right;">0.088</td>
-<td style="text-align: right;">4.925</td>
+<td style="text-align: right;">132</td>
+<td style="text-align: right;">5.024</td>
+<td style="text-align: right;">0.173</td>
+<td style="text-align: right;">4.654</td>
 <td style="text-align: right;">5.301</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Debt</td>
-<td style="text-align: right;">87</td>
-<td style="text-align: right;">4.724</td>
-<td style="text-align: right;">0.794</td>
+<td style="text-align: right;">132</td>
+<td style="text-align: right;">4.660</td>
+<td style="text-align: right;">0.664</td>
 <td style="text-align: right;">3.549</td>
 <td style="text-align: right;">5.900</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Inflation</td>
-<td style="text-align: right;">87</td>
-<td style="text-align: right;">0.653</td>
-<td style="text-align: right;">0.547</td>
+<td style="text-align: right;">132</td>
+<td style="text-align: right;">0.650</td>
+<td style="text-align: right;">0.617</td>
 <td style="text-align: right;">-1.923</td>
-<td style="text-align: right;">2.098</td>
+<td style="text-align: right;">3.704</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Interest</td>
-<td style="text-align: right;">87</td>
-<td style="text-align: right;">3.372</td>
-<td style="text-align: right;">2.006</td>
+<td style="text-align: right;">132</td>
+<td style="text-align: right;">4.605</td>
+<td style="text-align: right;">2.906</td>
 <td style="text-align: right;">0.100</td>
-<td style="text-align: right;">7.250</td>
+<td style="text-align: right;">16.750</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Stock</td>
-<td style="text-align: right;">87</td>
-<td style="text-align: right;">4.102</td>
-<td style="text-align: right;">0.151</td>
-<td style="text-align: right;">3.784</td>
-<td style="text-align: right;">4.484</td>
+<td style="text-align: right;">132</td>
+<td style="text-align: right;">-3.126</td>
+<td style="text-align: right;">1.981</td>
+<td style="text-align: right;">-6.135</td>
+<td style="text-align: right;">0.534</td>
 </tr>
 </tbody>
 </table>
@@ -305,41 +305,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="fig-line-plot" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="index_files/figure-html/fig-line-plot-1.png" class="img-fluid figure-img" width="672"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;2: Time Series Plots (Green lines are log transformation)</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;2: Time Series Plots (green lines are log transformation)</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
-</section>
-<section id="methodology" class="level1">
-<h1>Methodology</h1>
-<p>Bayesian Structural vector autoregression (SVAR) models to capture the dynamic and contemporaneous relationships between variables. The benchmark model is defined as:</p>
-<p><span class="math display">\[\begin{align}
-B_0Y_t = b_0 + \sum_{i=1}^{p}B_{i}Y_{t-i}+u_t
-\end{align}\]</span> <span class="math display">\[\begin{align}
-u_t|Y_{t-1}\sim iid(0_N,I_N)
-\end{align}\]</span></p>
-<p><span class="math inline">\(Y_t\)</span> is <span class="math inline">\(N\times1\)</span> matrix of endogenous variables,N represents the number of endogeneous variables and p is the number of lags. <span class="math inline">\(B_0\)</span> is <span class="math inline">\(N\times N\)</span> matrix capturing contemporaneous relationships between variables, and <span class="math inline">\(u_t\)</span> is <span class="math inline">\(N\times1\)</span> vector conditionally on <span class="math inline">\(Y_{t-1}\)</span> orthogonal structural shocks.</p>
-<p>In particular, in this model, <span class="math inline">\(Y_t\)</span> contains seven variables ordered as : (1) real per-capita GDP (<span class="math inline">\(G_t\)</span>), (2) real per-capita government expenditure (<span class="math inline">\(E_t\)</span>), (3) real per-capita government revenue (<span class="math inline">\(R_t\)</span>), (4) real per-capita public debt (<span class="math inline">\(D_t\)</span>), (5) inflation (<span class="math inline">\(i_t\)</span>), (6) cash rate target (r_t), (7) real stock price (<span class="math inline">\(S_t\)</span>).</p>
-<p><span class="math display">\[\begin{align}
-Y_t=\begin{pmatrix}
-\\ G_t
-\\ E_t
-\\ R_t
-\\ D_t
-\\ i_t
-\\ r_t
-\\ S_t
-\end{pmatrix}
-\end{align}\]</span></p>
-<p>The reduced form representation is: <span class="math display">\[\begin{align}
-Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
-\end{align}\]</span> <span class="math display">\[\begin{align}
-\epsilon_t|Y_{t-1}\sim iid(0_N,\Sigma)
-\end{align}\]</span></p>
-<p>The covariance matrix of <span class="math inline">\(\epsilon_t\)</span> can be written as: <span class="math display">\[\begin{align}
-\Sigma=B_0^{-1}{B_0^{-1}}^{'}
-\end{align}\]</span></p>
 </section>
 <section id="preliminary-results" class="level1">
 <h1>Preliminary Results</h1>
@@ -359,7 +329,7 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 <div id="fig-pacf-plot" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="index_files/figure-html/fig-pacf-plot-1.png" class="img-fluid figure-img" width="672"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;4: Partial ACF Plots</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;4: PACF Plots</figcaption><p></p>
 </figure>
 </div>
 </div>
@@ -394,45 +364,45 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">GDP</td>
-<td style="text-align: right;">-2.701</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">0.288</td>
+<td style="text-align: right;">-1.691</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.705</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Spending</td>
-<td style="text-align: right;">-1.933</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">0.604</td>
+<td style="text-align: right;">-2.563</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.342</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Revenue</td>
-<td style="text-align: right;">-2.577</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">0.339</td>
+<td style="text-align: right;">-1.295</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.869</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Debt</td>
-<td style="text-align: right;">-2.470</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">0.383</td>
+<td style="text-align: right;">-1.624</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.733</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Inflation</td>
-<td style="text-align: right;">-1.154</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">0.909</td>
+<td style="text-align: right;">-3.123</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.109</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Interest</td>
-<td style="text-align: right;">-2.177</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">0.503</td>
+<td style="text-align: right;">-4.007</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.011</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Stock</td>
-<td style="text-align: right;">-2.573</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">0.340</td>
+<td style="text-align: right;">-2.510</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.364</td>
 </tr>
 </tbody>
 </table>
@@ -456,44 +426,44 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">GDP</td>
-<td style="text-align: right;">-3.975</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">0.015</td>
+<td style="text-align: right;">-5.393</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.010</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Spending</td>
-<td style="text-align: right;">-4.178</td>
-<td style="text-align: right;">4</td>
+<td style="text-align: right;">-4.358</td>
+<td style="text-align: right;">5</td>
 <td style="text-align: right;">0.010</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Revenue</td>
-<td style="text-align: right;">-5.593</td>
-<td style="text-align: right;">4</td>
+<td style="text-align: right;">-6.489</td>
+<td style="text-align: right;">5</td>
 <td style="text-align: right;">0.010</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Debt</td>
-<td style="text-align: right;">-2.249</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">0.474</td>
+<td style="text-align: right;">-2.657</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.303</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Inflation</td>
-<td style="text-align: right;">-6.179</td>
-<td style="text-align: right;">4</td>
+<td style="text-align: right;">-6.211</td>
+<td style="text-align: right;">5</td>
 <td style="text-align: right;">0.010</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Interest</td>
-<td style="text-align: right;">-3.482</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">0.049</td>
+<td style="text-align: right;">-4.167</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.010</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Stock</td>
-<td style="text-align: right;">-4.475</td>
-<td style="text-align: right;">4</td>
+<td style="text-align: right;">-5.032</td>
+<td style="text-align: right;">5</td>
 <td style="text-align: right;">0.010</td>
 </tr>
 </tbody>
@@ -517,8 +487,8 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Debt</td>
-<td style="text-align: right;">-5.525</td>
-<td style="text-align: right;">4</td>
+<td style="text-align: right;">-6.87</td>
+<td style="text-align: right;">5</td>
 <td style="text-align: right;">0.01</td>
 </tr>
 </tbody>
@@ -526,6 +496,36 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 </div>
 </div>
 </div>
+</section>
+<section id="methodology" class="level1">
+<h1>Methodology</h1>
+<p>Bayesian Structural vector autoregression (SVAR) models to capture the dynamic and contemporaneous relationships between variables. The benchmark model is defined as:</p>
+<p><span class="math display">\[\begin{align}
+B_0Y_t = b_0 + \sum_{i=1}^{p}B_{i}Y_{t-i}+u_t
+\end{align}\]</span> <span class="math display">\[\begin{align}
+u_t|Y_{t-1}\sim iid(0_N,I_N)
+\end{align}\]</span></p>
+<p><span class="math inline">\(Y_t\)</span> is <span class="math inline">\(N\times1\)</span> matrix of endogenous variables,N represents the number of endogeneous variables and p is the number of lags. <span class="math inline">\(B_0\)</span> is <span class="math inline">\(N\times N\)</span> matrix capturing contemporaneous relationships between variables, and <span class="math inline">\(u_t\)</span> is <span class="math inline">\(N\times1\)</span> vector conditionally on <span class="math inline">\(Y_{t-1}\)</span> orthogonal structural shocks.</p>
+<p>In particular, in this model, <span class="math inline">\(Y_t\)</span> contains seven variables ordered as : (1) real per-capita GDP (<span class="math inline">\(G_t\)</span>), (2) real per-capita government expenditure (<span class="math inline">\(E_t\)</span>), (3) real per-capita government revenue (<span class="math inline">\(R_t\)</span>), (4) real per-capita public debt (<span class="math inline">\(D_t\)</span>), (5) inflation (<span class="math inline">\(i_t\)</span>), (6) cash rate target (<span class="math inline">\(r_t\)</span>), (7) real stock price (<span class="math inline">\(S_t\)</span>).</p>
+<p><span class="math display">\[\begin{align}
+Y_t=\begin{pmatrix}
+\\ G_t
+\\ E_t
+\\ R_t
+\\ D_t
+\\ i_t
+\\ r_t
+\\ S_t
+\end{pmatrix}
+\end{align}\]</span></p>
+<p>The reduced form representation is: <span class="math display">\[\begin{align}
+Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
+\end{align}\]</span> <span class="math display">\[\begin{align}
+\epsilon_t|Y_{t-1}\sim iid(0_N,\Sigma)
+\end{align}\]</span></p>
+<p>The covariance matrix of <span class="math inline">\(\epsilon_t\)</span> can be written as: <span class="math display">\[\begin{align}
+\Sigma=B_0^{-1}{B_0^{-1}}^{'}
+\end{align}\]</span></p>
 </section>
 <section id="references" class="level1 unnumbered">
 <h1 class="unnumbered">References</h1>
