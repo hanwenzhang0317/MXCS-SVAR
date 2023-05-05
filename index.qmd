@@ -251,7 +251,8 @@ for (i in 1: ncol(df)){
 knitr::kable(adf, index=TRUE)
 ```
 
-Take the first difference and run the Augmented Dickey-Fuller Test again, it is sensible to conclude that variables except public debt are integrated of order 1 as in @tbl-adf-diff. Public debt is integrated with order 2, since its second-order difference is stationary as @tbl-adf-diff2.  
+Take the first difference and run the Augmented Dickey-Fuller Test again, it is sensible to conclude that variables except public debt and interest rate are integrated of order 1 as in @tbl-adf-diff. Public debt is integrated with order 2, since its second-order difference is stationary as @tbl-adf-diff2.  
+
 ```{r}
 #| echo: false
 #| message: false
@@ -331,6 +332,524 @@ The covariance matrix of $\epsilon_t$ can be written as:
 \Sigma=B_0^{-1}{B_0^{-1}}^{'}
 \end{align}
 
+# Estimation 
+
+```{r}
+# create a numeric df, which would benefit computing 
+df.num <- cbind(
+  as.numeric(df$GDP),
+  as.numeric(df$Spending),
+  as.numeric(df$Revenue),
+  as.numeric(df$Debt),
+  as.numeric(df$Inflation),
+  as.numeric(df$Interest),
+  as.numeric(df$Stock)
+)
+colnames(df.num) <- colnames(df)
+```
+
+## Basic Model 
+
+### Define Functions 
+```{r}
+GetPrior.parameters <- function (N,p,kappa.1=1^2,kappa.2=100,Sigma.hat) {
+  
+  A.prior = matrix(0,(1+N*p),N)
+  A.prior[2:(N+1),] = diag(N) 
+  V.prior = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
+  S.prior = diag(diag(Sigma.hat))
+  nu.prior = N+1
+  
+  return (list(A.prior=A.prior,
+               V.prior = V.prior,
+               S.prior = S.prior,
+               nu.prior = nu.prior))
+}
+```
+
+```{r}
+GetPoesterior.parameters <- function (X,Y,A.prior,nu.prior,S.prior,V.prior) {
+  
+  V.bar.inv <- t(X)%*%X + diag(1/diag(V.prior))
+  V.bar <- solve(V.bar.inv)
+  A.bar <- V.bar%*%(t(X)%*%Y + diag(1/diag(V.prior))%*%A.prior)
+  nu.bar <- nrow(Y) + nu.prior
+  S.bar <- S.prior + t(Y)%*%Y + t(A.prior)%*%diag(1/diag(V.prior))%*%A.prior - t(A.bar)%*%V.bar.inv%*%A.bar
+  
+  return (list(V.bar = V.bar,
+               A.bar = A.bar,
+               nu.bar = nu.bar,
+               S.bar = S.bar))
+}
+```
+
+```{r draw poesterior parameters}
+DrawPosterior <- function (N,S,p,nu.bar,S.bar,A.bar,V.bar){
+  Sigma.posterior   = rWishart(S, df=nu.bar, Sigma=solve(S.bar))  
+  Sigma.posterior   = apply(Sigma.posterior,3,solve)            
+  Sigma.posterior   = array(Sigma.posterior,c(N,N,S))   
+  A.posterior       = array(rnorm(prod(c(dim(A.bar),S))),c(dim(A.bar),S)) 
+  B.posterior       = array(NA,c(N,N,S))
+  L                 = t(chol(V.bar)) 
+  B1.tilde.s        = array(NA,c(N,(1+N*p),S))
+  
+  for (s in 1:S){
+    cholSigma.s     = chol(Sigma.posterior[,,s])
+    B.posterior[,,s]= t(cholSigma.s) 
+    A.posterior[,,s]= A.bar + L%*%A.posterior[,,s]%*%cholSigma.s 
+    B1.tilde.s[,,s] = B.posterior[,,s]%*%t(A.posterior[,,s])
+  }
+  
+  # A.draws <- round(apply(A.posterior,1:2,mean),4)  # (Np+1) by N 
+  # B.draws <- round(apply(B.posterior,1:2,mean),4)  # N by N
+  # B1.draws <- round(apply(B.posterior,1:2,mean),4) # N by (1+Np)
+  # Sigma.draws <-round(apply(Sigma.posterior,1:2,mean),4)
+  
+  return(list(A.posterior = A.posterior,
+              B.posterior = B.posterior,
+              B1.tilde.s = B1.tilde.s,
+              Sigma.posterior = Sigma.posterior)
+         )
+}
+```
+
+```{r}
+ImposeSignRestriction <- function (restrictions, N,S,p,A.posterior,Sigma.posterior,B.posterior,B1.tilde.s){
+  
+  R1 <- diag(restrictions)
+  B0.draws      = array(NA,c(N,N,S))
+  B1.draws      = array(NA,c(N,(1+N*p),S))
+  i.vec = c()
+
+  for (s in 1:S){
+    A             = A.posterior[,,s]
+    Sigma         = Sigma.posterior[,,s]
+    B0.tilde      = B.posterior[,,s]
+    B1.tilde      = B1.tilde.s[,,s]
+    
+    i=1
+    sign.restrictions.do.not.hold = TRUE 
+    while (sign.restrictions.do.not.hold){
+    X           = matrix(rnorm(N*N),N,N) # draw iid normal X 
+    QR          = qr(X, tol = 1e-10)
+    Q           = qr.Q(QR,complete=TRUE)
+    R           = qr.R(QR,complete=TRUE)
+    Q           = t(Q %*% diag(sign(diag(R))))
+    B0          = Q%*%B0.tilde # 7 by 7 
+    B1          = Q%*%B1.tilde # 7 by 7 
+    B0.inv      = solve(B0)
+    check       = prod(R1 %*% B0.inv %*% diag(N)[,2] > 0)
+    if (check==1){sign.restrictions.do.not.hold=FALSE}
+    i=i+1
+    }
+    i.vec = c(i.vec,i)
+    B0.draws[,,s] = B0
+    B1.draws[,,s] = B1
+  }
+  return (list(B0.draws = B0.draws,
+               B1.draws = B1.draws))
+}
+
+```
+
+### Artificial Data Check  
+
+```{r generate bi-variate Gaussian random walk process}
+set.seed(1)
+RW1 <- arima.sim(model= list(order = c(0, 1, 0)), n=1000, mean=0, sd=1)
+plot.ts(RW1,main="Random Walk 1", col=4)
+plot.ts(diff(RW1),main="First difference of Random Walk 1", col=4)
+
+RW2 <- arima.sim(model= list(order = c(0, 1, 0)), n=1000, mean=0, sd=1)
+plot.ts(RW2,main="Random Walk 2", col=4)
+plot.ts(diff(RW2),main="First difference of Random Walk 2", col=4)
+
+RW  <- cbind(RW1,RW2)
+```
+
+```{r artificial data setting}
+Y       = RW[2:nrow(RW),]
+X       = matrix(1,nrow(Y),1)
+X       = cbind(X,RW[2: nrow(RW)-1,])
+
+N       = 2      # number of variables
+p       = 1      # number of lags
+S       = 10000  # sample size
+h       = 8      # number of periods ahead of forecasting
+K       = p + 1
+
+A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y                
+Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)   
+
+restrictions = c(-1,1)
+```
+
+```{r set-up, get design matrices and MLE}
+# #| echo: true
+# #| message: false
+# #| warning: false
+# N       = 7      # number of variables 
+# p       = 4      # number of lags 
+# S       = 10000  # sample size 
+# h       = 8      # number of periods ahead of forecasting 
+# K       = p + 1 
+# 
+# df.len  = nrow(df.num)
+# Y       = ts(df.num[K:df.len,], start=c(1991,3), frequency=4)
+# X       = matrix(1,nrow(Y),1)
+# 
+# # X is the design matrix, containing 1s and lags of Y 
+# for (i in 1:p){
+#   X     = cbind(X,df.num[K:df.len-i,])
+# }
+# 
+# A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y                # (X'X)^(-1)X'Y
+# Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)    # lecture 7 slides 29 
+
+# restrictions = c(-1,-1,-1, 1, 1,-1,-1) 
+```
+
+### Not using Functions 
+
+```{r prior distribution}
+# # Minnesota prior
+# # dimension of A.prior should match (1+Np)*N -> 43 * 12 in this case
+# kappa.1     = 1^2
+# kappa.2     = 100
+# kappa.3     = 1
+# A.prior     = matrix(0,nrow(A.hat),ncol(A.hat))
+#   # first row of A.prior is 0s
+#   # second to (N+1)th row is kappa.3*Identity(N)
+#   # the rest rows are 0s
+# A.prior[2:(N+1),] = kappa.3*diag(N)
+# V.prior     = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N))) # dimension is (Np+1)*(Np+1)
+# S.prior     = diag(diag(Sigma.hat))  # dimension is N*N
+# nu.prior    = N+1                    # scalar
+```
+
+```{r normal-inverse Wishard posterior parameters}
+# V.bar.inv   = t(X)%*%X + diag(1/diag(V.prior))  # diag(1/diag(M)) = M ^ (-1)
+# V.bar       = solve(V.bar.inv)
+# A.bar       = V.bar%*%(t(X)%*%Y + diag(1/diag(V.prior))%*%A.prior)
+# nu.bar      = nrow(Y) + nu.prior
+# S.bar       = S.prior + t(Y)%*%Y + t(A.prior)%*%diag(1/diag(V.prior))%*%A.prior - t(A.bar)%*%V.bar.inv%*%A.bar
+# S.bar.inv   = solve(S.bar)
+```
+
+```{r posterior draw}
+# Sigma.posterior   = rWishart(S, df=nu.bar, Sigma=S.bar.inv)
+# Sigma.posterior   = apply(Sigma.posterior,3,solve)
+# Sigma.posterior   = array(Sigma.posterior,c(N,N,S))   # reshape into S@N*N matrices
+# 
+# A.posterior       = array(rnorm(prod(c(dim(A.bar),S))),c(dim(A.bar),S))
+# # draw 43*7*10000 normal random variables, and reshape
+# B.posterior       = array(NA,c(N,N,S))
+# L                 = t(chol(V.bar)) # Compute the transpose of Choleski factorization of matrix
+# B1.tilde.s        = array(NA,c(N,(1+N*p),S)) # the dimension is N by (1+N*p)
+# 
+# for (s in 1:S){
+#   cholSigma.s     = chol(Sigma.posterior[,,s])
+#   B.posterior[,,s]= t(cholSigma.s) ### this is B0.tilde.s, 7 by 7
+#   A.posterior[,,s]= A.bar + L%*%A.posterior[,,s]%*%cholSigma.s # this is 29 by 7
+#   B1.tilde.s[,,s] = B.posterior[,,s]%*%t(A.posterior[,,s])
+# }
+# 
+# A.draws <- round(apply(A.posterior,1:2,mean),4)  # (Np+1) by N
+# B.draws <- round(apply(B.posterior,1:2,mean),4)  # N by N
+# B1.draws <- round(apply(B.posterior,1:2,mean),4) # N by (1+Np)
+# Sigma.draws <-round(apply(Sigma.posterior,1:2,mean),4)
+```
+
+```{r}
+# define government spending shocks 
+restrictions = c(-1,-1,-1, 1, 1,-1,-1)    
+
+R1 <- diag(restrictions)
+B0.draws      = array(NA,c(N,N,S))
+B1.draws      = array(NA,c(N,(1+N*p),S))
+i.vec = c()
+
+pb = txtProgressBar(min = 0, max = S, initial = 0, style = 1) 
+for (s in 1:S){
+  setTxtProgressBar(pb,s)
+  
+  A             = A.posterior[,,s]
+  Sigma         = Sigma.posterior[,,s]
+  B0.tilde     = B.posterior[,,s]
+  B1.tilde      = B1.tilde.s[,,s]
+  i=1
+  sign.restrictions.do.not.hold = TRUE 
+  
+  while (sign.restrictions.do.not.hold){
+  X           = matrix(rnorm(N*N),N,N) # draw iid normal X 
+  QR          = qr(X, tol = 1e-10)
+  Q           = qr.Q(QR,complete=TRUE)
+  R           = qr.R(QR,complete=TRUE)
+  Q           = t(Q %*% diag(sign(diag(R))))
+  B0          = Q%*%B0.tilde # N by N 
+  B1          = Q%*%B1.tilde # 7 by 7 
+  B0.inv      = solve(B0)
+  check       = prod(R1 %*% B0.inv %*% diag(N)[,2] > 0)
+  if (check==1){sign.restrictions.do.not.hold=FALSE}
+  i=i+1
+  }
+  
+  # print(i)
+  i.vec = c(i.vec,i)
+  B0.draws[,,s] = B0
+  B1.draws[,,s] = B1
+}
+close(pb)
+```
+
+
+### Calling Functions 
+
+```{r generating prior parameters}
+prior.parameters = GetPrior.parameters(N,p,kappa.1=1^2,kappa.2=100,Sigma.hat)
+A.prior <- prior.parameters$A.prior
+V.prior <- prior.parameters$V.prior
+S.prior <- prior.parameters$S.prior
+nu.prior <- prior.parameters$nu.prior
+```
+
+
+```{r generating normal-inverse Wishard posterior parameters}
+poesterior.parameters.iw <- GetPoesterior.parameters(X,Y,A.prior,nu.prior,S.prior,V.prior)
+
+A.bar <- poesterior.parameters.iw$A.bar
+V.bar <- poesterior.parameters.iw$V.bar
+S.bar <- poesterior.parameters.iw$S.bar
+nu.bar <- poesterior.parameters.iw$nu.bar
+```
+
+```{r}
+posterior.draws <- DrawPosterior(N,S,p,nu.bar,S.bar,A.bar,V.bar)
+
+A.posterior <- posterior.draws$A.posterior
+B.posterior <- posterior.draws$B.posterior
+B1.tilde.s <- posterior.draws$B1.tilde.s
+Sigma.posterior <- posterior.draws$Sigma.posterior
+```
+
+
+```{r apply sign restriction}
+B.draws.restricted <- ImposeSignRestriction(restrictions, N,S,p,A.posterior,Sigma.posterior,B.posterior,B1.tilde.s)
+
+B0.draws <- B.draws.restricted$B0.draws
+B1.draws <- B.draws.restricted$B1.draws
+```
+
+```{r check do they produce true parameters using simulated data}
+A.check <- array(NA,c(N+1,N,S))
+S.check <- array(NA,c(N,N,S))
+for (s in 1:S){
+  # convert Bo into Sigma 
+  S.check[,,s] <- B0.draws[,,s] %*% t(B0.draws[,,s])
+  A.check[,,s] <- t(B1.draws[,,s]) %*% B0.draws[,,s]
+}
+
+round(apply(A.check,1:2,mean),4)
+round(apply(S.check,1:2,mean),4)
+```
+
+
+## Extented Model 
+
+```{r}
+# GetPrior.parameters.e <- function (N,p,Sigma.hat,nu.kappa,S.kappa) {
+#  
+#   kappa.1 <- S.kappa / rchisq(1, df=nu.kappa) # IG2 draw 
+#   kappa.2 = 10 * kappa.1
+#   
+#   A.prior = matrix(0,(1+N*p),N)
+#   A.prior[2:(N+1),] = diag(N) 
+#   V.prior = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
+#   S.prior = diag(diag(Sigma.hat))
+#   nu.prior = N+1
+#   
+#   return (list(A.prior=A.prior,
+#                V.prior = V.prior,
+#                S.prior = S.prior,
+#                nu.prior = nu.prior))
+# }
+```
+
+
+```{r}
+GetPrior.parameters.g <- function (N,p,Sigma.hat,nu.kappa,S.kappa,Extended) {
+ 
+  if (Extended) {
+    kappa.1 <- S.kappa / rchisq(1, df=nu.kappa) # IG2 draw 
+    kappa.2 <- 10 * kappa.1
+  } else {
+    kappa.1 <- 1 
+    kappa.2 <- 100 
+  }
+  
+  A.prior = matrix(0,(1+N*p),N)
+  A.prior[2:(N+1),] = diag(N) 
+  V.prior = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
+  S.prior = diag(diag(Sigma.hat))
+  nu.prior = N+1
+  
+  return (list(A.prior=A.prior,
+               V.prior = V.prior,
+               S.prior = S.prior,
+               nu.prior = nu.prior,
+               kappa = kappa.1))
+}
+```
+
+
+```{r}
+# This functions should work 
+GetPoesterior.parameters.e <- function (X,Y,A.prior,nu.prior,S.prior,V.prior) {
+  
+  V.bar.inv <- t(X)%*%X + solve(kappa*V.prior)
+  V.bar <- solve(V.bar.inv)
+  A.bar <- V.bar%*%(t(X)%*%Y + diag(1/diag(kappa*V.prior))%*%A.prior)
+  nu.bar <- nrow(Y) + nu.prior
+  S.bar <- S.prior + t(Y)%*%Y + t(A.prior)%*%diag(1/diag(kappa*V.prior))%*%A.prior - t(A.bar)%*%V.bar.inv%*%A.bar
+  
+  return (list(V.bar = V.bar,
+               A.bar = A.bar,
+               nu.bar = nu.bar,
+               S.bar = S.bar))
+}
+
+
+```
+
+
+
+```{r}
+DrawPosterior.e <- function (N,S,p,nu.bar,S.bar,A.bar,V.bar){
+  
+  ASigma.posterior   = rWishart(S, df=nu.bar, Sigma=solve(S.bar))  
+  Sigma.posterior   = apply(Sigma.posterior,3,solve)            
+  Sigma.posterior   = array(Sigma.posterior,c(N,N,S))   
+  A.posterior       = array(rnorm(prod(c(dim(A.bar),S))),c(dim(A.bar),S)) 
+  B.posterior       = array(NA,c(N,N,S))
+  L                 = t(chol(V.bar)) 
+  B1.tilde.s        = array(NA,c(N,(1+N*p),S))
+  
+  for (s in 1:S){
+    cholSigma.s     = chol(Sigma.posterior[,,s])
+    B.posterior[,,s]= t(cholSigma.s) 
+    A.posterior[,,s]= A.bar + L%*%A.posterior[,,s]%*%cholSigma.s 
+    B1.tilde.s[,,s] = B.posterior[,,s]%*%t(A.posterior[,,s])
+  }
+  
+  return(list(A.posterior = A.posterior,
+              B.posterior = B.posterior,
+              B1.tilde.s = B1.tilde.s,
+              Sigma.posterior = Sigma.posterior)
+         )
+}
+```
+
+
+## Code reservation 
+```{r}
+# kappa.1     = 1^2
+# kappa.2     = 100
+# kappa.3     = 1
+# A.prior     = matrix(0,nrow(A.hat),ncol(A.hat))
+# A.prior[2:(N+1),] = kappa.3*diag(N)
+# V.prior     = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N))) 
+# S.prior     = diag(diag(Sigma.hat)) 
+# nu.prior    = N+1                   
+```
+
+```{r prior distribution}
+# # Minnesota prior
+# # dimension of A.prior should match (1+Np)*N -> 43 * 12 in this case
+# kappa.1     = 1^2
+# kappa.2     = 100
+# kappa.3     = 1
+# A.prior     = matrix(0,nrow(A.hat),ncol(A.hat))
+#   # first row of A.prior is 0s
+#   # second to (N+1)th row is kappa.3*Identity(N)
+#   # the rest rows are 0s
+# A.prior[2:(N+1),] = kappa.3*diag(N)
+# V.prior     = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N))) # dimension is (Np+1)*(Np+1)
+# S.prior     = diag(diag(Sigma.hat))  # dimension is N*N
+# nu.prior    = N+1                    # scalar
+```
+
+```{r normal-inverse Wishard posterior parameters}
+# V.bar.inv   = t(X)%*%X + diag(1/diag(V.prior))  # diag(1/diag(M)) = M ^ (-1)
+# V.bar       = solve(V.bar.inv)
+# A.bar       = V.bar%*%(t(X)%*%Y + diag(1/diag(V.prior))%*%A.prior)
+# nu.bar      = nrow(Y) + nu.prior
+# S.bar       = S.prior + t(Y)%*%Y + t(A.prior)%*%diag(1/diag(V.prior))%*%A.prior - t(A.bar)%*%V.bar.inv%*%A.bar
+# S.bar.inv   = solve(S.bar)
+```
+
+```{r posterior draw}
+# Sigma.posterior   = rWishart(S, df=nu.bar, Sigma=S.bar.inv)
+# Sigma.posterior   = apply(Sigma.posterior,3,solve)
+# Sigma.posterior   = array(Sigma.posterior,c(N,N,S))   # reshape into S@N*N matrices
+# 
+# A.posterior       = array(rnorm(prod(c(dim(A.bar),S))),c(dim(A.bar),S))
+# # draw 43*7*10000 normal random variables, and reshape
+# B.posterior       = array(NA,c(N,N,S))
+# L                 = t(chol(V.bar)) # Compute the transpose of Choleski factorization of matrix
+# B1.tilde.s        = array(NA,c(N,(1+N*p),S)) # the dimension is N by (1+N*p)
+# 
+# for (s in 1:S){
+#   cholSigma.s     = chol(Sigma.posterior[,,s])
+#   B.posterior[,,s]= t(cholSigma.s) ### this is B0.tilde.s, 7 by 7
+#   A.posterior[,,s]= A.bar + L%*%A.posterior[,,s]%*%cholSigma.s # this is 29 by 7
+#   B1.tilde.s[,,s] = B.posterior[,,s]%*%t(A.posterior[,,s])
+# }
+# 
+# A.draws <- round(apply(A.posterior,1:2,mean),4)  # (Np+1) by N
+# B.draws <- round(apply(B.posterior,1:2,mean),4)  # N by N
+# B1.draws <- round(apply(B.posterior,1:2,mean),4) # N by (1+Np)
+# Sigma.draws <-round(apply(Sigma.posterior,1:2,mean),4)
+```
+
+```{r}
+# restrictions = c(-1,1) 
+# R1 <- diag(restrictions)
+# B0.draws      = array(NA,c(N,N,S))
+# B1.draws      = array(NA,c(N,(1+N*p),S))
+# i.vec = c()
+# 
+# pb = txtProgressBar(min = 0, max = S, initial = 0, style = 1) 
+# for (s in 1:S){
+#   setTxtProgressBar(pb,s)
+#   
+#   A             = A.posterior[,,s]
+#   Sigma         = Sigma.posterior[,,s]
+#   B0.tilde     = B.posterior[,,s]
+#   B1.tilde      = B1.tilde.s[,,s]
+#   i=1
+#   sign.restrictions.do.not.hold = TRUE 
+#   
+#   while (sign.restrictions.do.not.hold){
+#   X           = matrix(rnorm(N*N),N,N) # draw iid normal X 
+#   QR          = qr(X, tol = 1e-10)
+#   Q           = qr.Q(QR,complete=TRUE)
+#   R           = qr.R(QR,complete=TRUE)
+#   Q           = t(Q %*% diag(sign(diag(R))))
+#   B0          = Q%*%B0.tilde # N by N 
+#   B1          = Q%*%B1.tilde # 7 by 7 
+#   B0.inv      = solve(B0)
+#   check       = prod(R1 %*% B0.inv %*% diag(N)[,2] > 0)
+#   if (check==1){sign.restrictions.do.not.hold=FALSE}
+#   i=i+1
+#   }
+#   
+#   # print(i)
+#   i.vec = c(i.vec,i)
+#   B0.draws[,,s] = B0
+#   B1.draws[,,s] = B1
+# }
+# close(pb)
+```
 
 
 # References {.unnumbered}
