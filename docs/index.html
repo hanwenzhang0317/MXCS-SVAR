@@ -156,6 +156,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
   <li><a href="#preliminary-results" id="toc-preliminary-results" class="nav-link" data-scroll-target="#preliminary-results">Preliminary Results</a></li>
   <li><a href="#methodology" id="toc-methodology" class="nav-link" data-scroll-target="#methodology">Methodology</a></li>
+  <li><a href="#estimation" id="toc-estimation" class="nav-link" data-scroll-target="#estimation">Estimation</a>
+  <ul class="collapse">
+  <li><a href="#basic-model" id="toc-basic-model" class="nav-link" data-scroll-target="#basic-model">Basic Model</a>
+  <ul class="collapse">
+  <li><a href="#not-using-functions" id="toc-not-using-functions" class="nav-link" data-scroll-target="#not-using-functions">Not using Functions</a></li>
+  </ul></li>
+  <li><a href="#extented-model" id="toc-extented-model" class="nav-link" data-scroll-target="#extented-model">Extented Model</a></li>
+  <li><a href="#create-artificial-data" id="toc-create-artificial-data" class="nav-link" data-scroll-target="#create-artificial-data">Create Artificial Data</a></li>
+  </ul></li>
+  <li><a href="#code-reservation" id="toc-code-reservation" class="nav-link" data-scroll-target="#code-reservation">Code reservation</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -409,7 +419,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 </div>
-<p>Take the first difference and run the Augmented Dickey-Fuller Test again, it is sensible to conclude that variables except public debt are integrated of order 1 as in <a href="#tbl-adf-diff">Table&nbsp;3</a>. Public debt is integrated with order 2, since its second-order difference is stationary as <a href="#tbl-adf-diff2">Table&nbsp;4</a>.</p>
+<p>Take the first difference and run the Augmented Dickey-Fuller Test again, it is sensible to conclude that variables except public debt and interest rate are integrated of order 1 as in <a href="#tbl-adf-diff">Table&nbsp;3</a>. Public debt is integrated with order 2, since its second-order difference is stationary as <a href="#tbl-adf-diff2">Table&nbsp;4</a>.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="tbl-adf-diff" class="anchored">
@@ -526,6 +536,129 @@ Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
 <p>The covariance matrix of <span class="math inline">\(\epsilon_t\)</span> can be written as: <span class="math display">\[\begin{align}
 \Sigma=B_0^{-1}{B_0^{-1}}^{'}
 \end{align}\]</span></p>
+</section>
+<section id="estimation" class="level1">
+<h1>Estimation</h1>
+<div class="cell">
+
+</div>
+<section id="basic-model" class="level2">
+<h2 class="anchored" data-anchor-id="basic-model">Basic Model</h2>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<section id="not-using-functions" class="level3">
+<h3 class="anchored" data-anchor-id="not-using-functions">Not using Functions</h3>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+</section>
+</section>
+<section id="extented-model" class="level2">
+<h2 class="anchored" data-anchor-id="extented-model">Extented Model</h2>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<p>Construction of Gibbs Sampler Algorithm:</p>
+<p>Initialize <span class="math inline">\(\kappa\)</span> at <span class="math inline">\(\kappa^{0}\)</span>.</p>
+<p>At each iteration s:</p>
+<ol type="1">
+<li>Draw <span class="math inline">\((A,\Sigma)^{s} \sim p(A,\Sigma| X,Y,\kappa^{s-1})\)</span></li>
+<li>Draw <span class="math inline">\(\kappa^{s} \sim p(\kappa|Y,X,A,\Sigma)\)</span></li>
+</ol>
+<p>Repeat 1 and 2 for <span class="math inline">\((S_1 + S_2)\)</span> times.</p>
+<p>Discard the first <span class="math inline">\(S_1\)</span>.</p>
+<div class="cell">
+
+</div>
+</section>
+<section id="create-artificial-data" class="level2">
+<h2 class="anchored" data-anchor-id="create-artificial-data">Create Artificial Data</h2>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/generate bi-variate Gaussian random walk process-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/generate bi-variate Gaussian random walk process-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/generate bi-variate Gaussian random walk process-3.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/generate bi-variate Gaussian random walk process-4.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>       [,1]    [,2]
+[1,] 0.0395 -0.1369
+[2,] 1.0633  0.0162
+[3,] 0.0156  1.0576</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       [,1]   [,2]
+[1,] 1.0770 0.0001
+[2,] 0.0001 1.0652</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="code-reservation" class="level1">
+<h1>Code reservation</h1>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
 </section>
 <section id="references" class="level1 unnumbered">
 <h1 class="unnumbered">References</h1>
