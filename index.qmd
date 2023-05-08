@@ -295,17 +295,17 @@ u_t|Y_{t-1}\sim iid(0_N,I_N)
 
 $Y_t$ is $N\times1$ matrix of endogenous variables,N represents the number of endogeneous variables and p is the number of lags. $B_0$ is $N\times N$ matrix capturing contemporaneous relationships between variables, and $u_t$ is $N\times1$ vector conditionally on $Y_{t-1}$ orthogonal structural shocks. 
 
-In particular, in this model, $Y_t$ contains seven variables ordered as : (1) real per-capita GDP ($G_t$), (2) real per-capita government expenditure ($E_t$), (3) real per-capita government revenue ($R_t$), (4) real per-capita public debt ($D_t$), (5) inflation ($i_t$), (6) cash rate target ($r_t$), (7) real stock price ($S_t$).
+In particular, in this model, $Y_t$ contains seven variables ordered as : (1) real per-capita GDP ($GDP_t$), (2) real per-capita government expenditure ($Expenditure_t$), (3) real per-capita government revenue ($Revenue_t$), (4) real per-capita public debt ($Debt_t$), (5) inflation ($Inflation_t$), (6) cash rate target ($Interest_t$), (7) real stock price ($Stock_t$).
 
 \begin{align}
 Y_t=\begin{pmatrix} 
-\\ G_t
-\\ E_t
-\\ R_t 
-\\ D_t
-\\ i_t
-\\ r_t
-\\ S_t
+\\ GDP_t
+\\ Expenditure_t
+\\ Revenue_t 
+\\ Debt_t
+\\ Inflation_t 
+\\ Interest_t 
+\\ Stock_t
 \end{pmatrix}
 \end{align}
 
@@ -390,36 +390,14 @@ where we have posterior distribution parameters:
 \\ \bar{S} = \underline{S} + Y^{'}Y +  A^{'}\underline{V}^{-1}\underline{A} - \bar{A}^{'}\bar{V}^{-1}\bar{A}
 \end{gather}
 
-
 From above derivation, we can compute functions to calculate parameters:
-```{r}
-# #| echo: true
-# GetPrior.parameters <- function (N,p,kappa.1=1^2,kappa.2=100,Sigma.hat) {
-#   
-#   A.prior = matrix(0,(1+N*p),N)
-#   A.prior[2:(N+1),] = diag(N) 
-#   V.prior = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
-#   S.prior = diag(diag(Sigma.hat))
-#   nu.prior = N+1
-#   
-#   return (list(A.prior = A.prior,
-#                V.prior = V.prior,
-#                S.prior = S.prior,
-#                nu.prior = nu.prior))
-# }
-```
 
 ```{r}
-GetPrior.parameters.g <- function (N,p,Sigma.hat,nu.kappa,S.kappa,Extended) {
+GetPrior.parameters <- function (N,p,Sigma.hat,nu.kappa,S.kappa) {
  
-  if (Extended) {
-    kappa.1 <- S.kappa / rchisq(1, df=nu.kappa) # IG2 draw 
-    kappa.2 <- 10 * kappa.1
-  } else {
-    kappa.1 <- 1 
-    kappa.2 <- 100 
-  }
-  
+  kappa.1 <- 1 
+  kappa.2 <- 100 
+
   A.prior = matrix(0,(1+N*p),N)
   A.prior[2:(N+1),] = diag(N) 
   V.prior = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
@@ -450,7 +428,7 @@ GetPoesterior.parameters <- function (X,Y,A.prior,nu.prior,S.prior,V.prior) {
 }
 ```
 
-Then posterior distributions can be drawn: 
+Then posterior distributions of $A$ and $\Sigma$ can be drawn: 
 
 ```{r draw poesterior}
 #| echo: true
@@ -478,7 +456,10 @@ DrawPosterior <- function (N,S,p,nu.bar,S.bar,A.bar,V.bar){
 }
 ```
 
-After the posterior draws,we apply sign restrictions to  
+After the posterior draws, we apply sign restrictions to identify the model. For any set of sign restrictions, given a parameter point $B_{+},B_{0}$ that satisfies such restrictions, there always exists an orthogonal matrix Q, arbitrarily close to an identity such that $QB_{+},QB_{0}$ satisfy the sign restrictions. 
+
+The Algorithm from Fry, Pagan (2011) is implemented to transfer SF parameters $(\tilde{B_+},\tilde{B_0})$ to parameters $(B_{+},B_{0})$ such the restrictions of interest holds. 
+
 
 ```{r}
 #| echo: true
@@ -522,40 +503,45 @@ ImposeSignRestriction <- function (restrictions,N,S,p,A.posterior,Sigma.posterio
 
 
 ## Extented Model 
+In the extended model,instead of setting $\kappa_1$ and $\kappa_2$ as fixed values, the overall shrinkage level for auto-regressive slopes $\kappa_1$ is assumed to follow an inverse gamma 2 distribution $IG2(\underline{S}_{\kappa},\underline{\nu}_{\kappa})$, and shrinkage of constant term $\kappa_2$ can be set as $100 \times \kappa_1$. 
 
-In the extended model, instead of setting $\kappa_1$ and $\kappa_2$ as fixed values, we can assume $\kappa_1$ is from an inverse gamma 2 distribution as
+Under this setting, 
+\begin{gather}
+p(\kappa|A,\Sigma,Y,X) \\ 
+\\ p(A,\Sigma|X,Y,\kappa) 
+\end{gather}
 
-\begin{align}
-\kappa \sim IG2(\underline{S}_ \kappa,\underline{\nu}_ \kappa)
-\end{align}
+The full conditional posterior of $(A,\Sigma)$ is: 
+\begin{gather}
+p(A,\Sigma|X,Y,\kappa) \propto L(A,\Sigma|Y,X) \times p(A|\Sigma,\kappa) \times p(\Sigma) \\
+\\ \propto det(\Sigma)^{-\frac{K}{2}} exp \left\{-\frac{1}{2}tr \left[ \Sigma^{-1}(Y-XA)^{'}(Y-XA)\right] \right\} \\
+\\ \times exp \left\{ -\frac{1}{2} tr \left[ \Sigma^{-1}(A-\underline{A})^{'}(\kappa \underline{V})^{-1}(A-\underline{A}) \right] \right\} \\
+\\ \times det(\Sigma)^{\frac{\underline{\nu}+N+1}{2}} exp\left\{-\frac{1}{2} tr \left[\Sigma^{-1}\underline{S} \right] \right\}
+\end{gather}
 
-$\kappa_2$ can be set as $100 \times \kappa_1$. 
+We recognize kernel of matrix-normal inverse Wharst distribution, with parameters as follows: 
+\begin{gather}
+\bar{V} = (X'X+(\kappa \underline{V}))^{-1} \\ 
+\\ \bar{A} = \bar{V}(X'Y+(\kappa \underline{V}^{-1}\underline{A})) \\ \\ \bar{S} = \underline{S}+Y'Y+A'(\kappa \underline{V})^{-1} - \bar{A}^{'} \bar{V}^{-1}\bar{A} \\ 
+\\ \bar{\nu} = T + \underline{\nu}
+\end{gather}
 
-```{r}
-# GetPrior.parameters.g <- function (N,p,Sigma.hat,nu.kappa,S.kappa,Extended) {
-#  
-#   if (Extended) {
-#     kappa.1 <- S.kappa / rchisq(1, df=nu.kappa) # IG2 draw 
-#     kappa.2 <- 10 * kappa.1
-#   } else {
-#     kappa.1 <- 1 
-#     kappa.2 <- 100 
-#   }
-#   
-#   A.prior = matrix(0,(1+N*p),N)
-#   A.prior[2:(N+1),] = diag(N) 
-#   V.prior = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
-#   S.prior = diag(diag(Sigma.hat))
-#   nu.prior = N+1
-#   
-#   return (list(A.prior=A.prior,
-#                V.prior = V.prior,
-#                S.prior = S.prior,
-#                nu.prior = nu.prior))
-# }
-```
+The full-conditional posterior of $\kappa$ is: 
+\begin{gather}
+p(\kappa | A,\Sigma, Y,X) \propto L(Y|X,A,\Sigma) \times p(\kappa) \times p(A|\Sigma,\kappa) \times p(\Sigma) \\ 
+\\ \propto p(\kappa) \times p(A|\Sigma,\kappa) \\ 
+\\ \propto (\kappa)^{-\frac{\underline{\nu}_{\kappa}+2}{2}} 
+exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times exp\left\{-\frac{1}{2}tr\left[\Sigma^{-1}(A-\underline{A})^{'} \frac{1}{\kappa}(\underline{V})^{-1} (A-\underline{A})\right]\right\} \times det(\kappa \underline{V})^{-\frac{N}{2}} \\ 
+\\ \propto (\kappa)^{-\frac{\underline{\nu}_{\kappa}+2+NK}{2}} exp \left\{-\frac{1}{2} \frac{1}{\kappa} \left[\underline{S}_{\kappa} + tr \left[\Sigma^{-1}(A-\underline{A})^{'}\underline{V}^{-1}(A-\underline{A}) \right]\right] \right\}
+\end{gather}
+which we recognise the kernel of inverse gamma 2 distribution with
+\begin{gather}
+\bar{S}_{\kappa} = \underline{S}_{\kappa}+tr \left[ \Sigma^{-1} (A-\underline{A})^{'} \underline{V}^{-1} (A-\underline{A})\right] \\
+\\ \bar{\nu}_{\kappa} = \underline{\nu}_{\kappa}+NK
+\end{gather}
 
-Construction of Gibbs Sampler Algorithm: 
+
+Gibbs Sampler can be conducted to get the posterior draws of the extended model, for which we can, 
 
 Initialize $\kappa$ at $\kappa^{(0)}$. 
 
@@ -569,65 +555,67 @@ Repeat 1 and 2 for $(S_1 + S_2)$ times.
 Discard the first $S_1$. 
 
 ```{r}
-DrawPosterior.e <- function (N,p,Y,X,nu.prior,A.prior,V.prior,S.prior,nu.kappa,S.kappa,S1,S2){
+#| echo: true
+DrawPosterior.e <- function (Y,X,nu.prior,A.prior,V.prior,S.prior,nu.kappa,S.kappa,S1,S2){
   
+  N = ncol(Y)
+  K = ncol(X)
+  T = nrow(Y)
   kappa           <- c()
-  A.posterior     <- array(NA,c((1+N*p),N,(S1+S2)))
+  A.posterior     <- array(NA,c(K,N,(S1+S2)))
   Sigma.posterior <- array(NA,c(N,N,(S1+S2))) 
   B.posterior     <- array(NA,c(N,N,(S1+S2)))
-  B1.tilde.s      <- array(NA,c(N,(1+N*p),(S1+S2)))
+  B1.tilde.s      <- array(NA,c(N,K,(S1+S2)))
   
   # Initialize kappa.0 
   kappa[1] <- 1 
   
-  # Not affected by kappa value 
-  nu.bar <- nu.prior + nrow(Y)
-  nu.kappa.bar <- nu.kappa + N*nrow(Y) # N*K 
+  nu.bar <- nu.prior + T 
+  nu.kappa.bar <- nu.kappa + N*K # N*K 
  
   for (s in 1:(S1+S2)){
-    # STEP 1: draw (A Sigma).s from MNIW(A.bar,V.bar,S.bar,nu.bar) thich is conditional on kappa.(s-1)
-              # Note here I made list of kappa, when kappa[1] = initial value (kappa.0) 
-              # therefore, kappa[s] = kappa.(s-1)
+    # STEP 1: draw (A Sigma).s from MNIW(A.bar,V.bar,S.bar,nu.bar)
     V.bar.inv <- t(X)%*%X + solve(kappa[s]*V.prior)
     V.bar     <- solve(V.bar.inv)
     
     A.bar     <- V.bar%*%(t(X)%*%Y + diag(1/diag(kappa[s]*V.prior))%*%A.prior)
     S.bar     <- S.prior + t(Y)%*%Y + t(A.prior)%*%diag(1/diag(kappa[s]*V.prior))%*%A.prior - t(A.bar)%*%V.bar.inv%*%A.bar
               
-              # Now posterior parameters are computed using kappa values, then we can draw (A Sigma)
-    draw.sigma = apply(rWishart(1, df=nu.bar, Sigma=solve(S.bar)),3,solve)
-    Sigma.posterior[,,s] = array(draw.sigma,c(N,N))
+    draw.sigma.inv = solve(rWishart(1, df=nu.bar, Sigma=solve(S.bar))[,,1])
+    Sigma.posterior[,,s] = draw.sigma.inv
     
     cholSigma.s            = chol(Sigma.posterior[,,s])
-    A.posterior[,,s]       = matrix(MASS::mvrnorm(1,as.vector(A.bar),Sigma.posterior[,,s]%x%V.bar),ncol=N)               # from lec10 - page 12 
+    A.posterior[,,s]       = matrix(MASS::mvrnorm(1,as.vector(A.bar),Sigma.posterior[,,s]%x%V.bar),ncol=N)      
     
     L                <- t(chol(V.bar))
     B.posterior[,,s] <- t(chol(Sigma.posterior[,,s])) 
     B1.tilde.s[,,s]  <- B.posterior[,,s]%*%t(A.posterior[,,s])
     
     # STEP 2: draw kappa.s from IG2(S.bar, nu.bar)
-              # Note kappa.s = kappa[s+1]
-    S.kappa.bar <- S.kappa + sum(diag( solve(Sigma.posterior[,,s]) %*% t(A.posterior[,,s]-A.prior)%*% solve(V.prior) %*% (A.posterior[,,s]-A.prior)))
+    S.kappa.bar <- S.kappa + sum(diag( draw.sigma.inv %*% t(A.posterior[,,s]-A.prior)%*% diag(1/diag(V.prior)) %*% (A.posterior[,,s]-A.prior)))
     kappa[s+1]  <- S.kappa.bar / rchisq(1, df=nu.kappa.bar)
   }   
   
   return(list(Sigma.posterior.e = Sigma.posterior[,,(S1+1):(S1+S2)],
               A.posterior.e = A.posterior[,,(S1+1):(S1+S2)],
               B1.tilde.s.e = B1.tilde.s[,,(S1+1):(S1+S2)],
-              B.posterior.e = B.posterior[,,(S1+1):(S1+S2)]))
+              B.posterior.e = B.posterior[,,(S1+1):(S1+S2)],
+              kappa.e = kappa[(S1+1):(S1+S2)]))
 }
 ```
 
+The sign restrictions would be implied in the same way as the basic model. 
+
 ## Artificial Data Check
 
-1000 observations of bi-variate Gaussian random walk processes with the covariance matrix equal to the identity matrix of order 2 are generated as @fig-actificial-data  to test the model framework.
+1000 observations of bi-variate Gaussian random walk processes with the covariance matrix equal to the identity matrix of order 2 are generated as @fig-actificial-data to test whether the modeling frameworks are able to estimate true parameters of the data generating process. 
 
 ```{r generate bi-variate Gaussian random walk process}
 #| echo: true
 #| label: fig-actificial-data
 #| fig-cap: "Bi-variate Gaussian random walk"
 par(mfrow=c(2,2))
-set.seed(90007)
+set.seed(2023)
 RW1 <- arima.sim(model= list(order = c(0, 1, 0)), n=1000, mean=0, sd=1)
 plot.ts(RW1,main="Random Walk 1", col=4)
 plot.ts(diff(RW1),main="First difference of Random Walk 1", col=4)
@@ -644,11 +632,11 @@ Y       = RW[2:nrow(RW),]
 X       = matrix(1,nrow(Y),1)
 X       = cbind(X,RW[2: nrow(RW)-1,])
 
-N       = 2      # number of variables
+N       = ncol(Y)      # number of variables
 p       = 1      # number of lags
-S       = 10000  # sample size
+S       = 50000  # sample size
 h       = 8      # number of periods ahead of forecasting
-K       = p + 1
+K       = N*p + 1
 
 A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y                
 Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)   
@@ -658,9 +646,8 @@ restrictions = c(-1,1)
 
 ### Basic Model
 
-
 ```{r generating prior parameters}
-prior.parameters = GetPrior.parameters.g(N,p,Sigma.hat,nu.kappa,S.kappa,FALSE)
+prior.parameters <- GetPrior.parameters(N,p,Sigma.hat,nu.kappa,S.kappa)
 A.prior <- prior.parameters$A.prior
 V.prior <- prior.parameters$V.prior
 S.prior <- prior.parameters$S.prior
@@ -693,7 +680,6 @@ B1.draws <- B.draws.restricted$B1.draws
 ```
 
 ```{r check for basic model}
-
 A.check <- array(NA,c(N+1,N,S))
 S.check <- array(NA,c(N,N,S))
 for (s in 1:S){
@@ -703,7 +689,7 @@ for (s in 1:S){
 }
 ```
 
-@tbl-Acheck Shows the rotation matrix 
+@tbl-Acheck and  @tbl-Scheck show the matrix of $A$ and $\Sigma$, suggesting the basic model estimation using artificial data of 1 lag and constant term is showing zero posterior mean of the autoregressive and covariance matrices are close to an identity matrix and the posterior mean of the constant term is close to zeros too. 
 ```{r}
 #| label: tbl-Acheck
 #| tbl-cap: Basic Model - A
@@ -711,8 +697,6 @@ d1 <- as.data.frame(round(apply(A.check,1:2,mean),4))
 knitr::kable(d1, index=TRUE)
 ```
 
-
-@tbl-Scheck
 ```{r}
 #| label: tbl-Scheck
 #| tbl-cap: Basic Model - Sigma 
@@ -722,11 +706,12 @@ knitr::kable(d2, index=TRUE)
 
 ### Extended Model 
 
+Then we can use the same data to check whether the extension model is working. 
 ```{r}
 nu.kappa <- 1
 S.kappa <- 1 
 
-prior.e <- GetPrior.parameters.g(N,p,Sigma.hat,nu.kappa,S.kappa,TRUE)
+prior.e <- GetPrior.parameters(N,p,Sigma.hat,nu.kappa,S.kappa)
 
 A.prior <- prior.e$A.prior
 V.prior <- prior.e$V.prior
@@ -737,15 +722,16 @@ kappa <- prior.e$kappa
 
 
 ```{r}
-S1 = 1000
-S2 = 9000
-posterior.e <- DrawPosterior.e(N,p,Y,X,nu.prior,A.prior,V.prior,S.prior,nu.kappa,S.kappa,S1,S2)
+S1 = 5000
+S2 = 45000
+posterior.e <-
+DrawPosterior.e(Y,X,nu.prior,A.prior,V.prior,S.prior,nu.kappa,S.kappa,S1,S2)
 
 Sigma.posterior <- posterior.e$Sigma.posterior.e
 A.posterior <- posterior.e$A.posterior.e
 B1.tilde.s <- posterior.e$B1.tilde.s.e
 B.posterior <- posterior.e$B.posterior.e
-
+kappa <- posterior.e$kappa.e
 ```
 
 ```{r apply sign restriction-extended model}
@@ -759,13 +745,12 @@ B1.draws <- B.draws.restricted$B1.draws
 A.check <- array(NA,c(N+1,N,S2))
 S.check <- array(NA,c(N,N,S2))
 for (s in 1:S2){
-  # convert Bo into Sigma 
   S.check[,,s] <- B0.draws[,,s] %*% t(B0.draws[,,s])
   A.check[,,s] <- t(B1.draws[,,s]) %*% B0.draws[,,s]
 }
 ```
 
-@tbl-Acheck2
+@tbl-Acheck2 and @tbl-Scheck2 also shows desired results, suggesting the extented model is also working. 
 ```{r}
 #| label: tbl-Acheck2
 #| tbl-cap: Extended Model - A 
@@ -773,7 +758,6 @@ d3 <- round(apply(A.check,1:2,mean),4)
 knitr::kable(d3, index=TRUE)
 ```
 
-@tbl-Scheck2
 ```{r}
 #| label: tbl-Scheck2
 #| tbl-cap: Extended Model - Sigma 
@@ -781,33 +765,8 @@ d4 <- round(apply(S.check,1:2,mean),4)
 knitr::kable(d4, index=TRUE)
 ```
 
-
 # Empirical Estimation 
 
-```{r set-up, get design matrices and MLE}
-# #| echo: true
-# #| message: false
-# #| warning: false
-# N       = 7      # number of variables 
-# p       = 4      # number of lags 
-# S       = 10000  # sample size 
-# h       = 8      # number of periods ahead of forecasting 
-# K       = p + 1 
-# 
-# df.len  = nrow(df.num)
-# Y       = ts(df.num[K:df.len,], start=c(1991,3), frequency=4)
-# X       = matrix(1,nrow(Y),1)
-# 
-# # X is the design matrix, containing 1s and lags of Y 
-# for (i in 1:p){
-#   X     = cbind(X,df.num[K:df.len-i,])
-# }
-# 
-# A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y                # (X'X)^(-1)X'Y
-# Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)    # lecture 7 slides 29 
-
-# restrictions = c(-1,-1,-1, 1, 1,-1,-1) 
-```
 
 # References {.unnumbered}
 
