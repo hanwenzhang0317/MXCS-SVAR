@@ -160,7 +160,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <ul class="collapse">
   <li><a href="#basic-model" id="toc-basic-model" class="nav-link" data-scroll-target="#basic-model">Basic Model</a></li>
   <li><a href="#extented-model" id="toc-extented-model" class="nav-link" data-scroll-target="#extented-model">Extented Model</a></li>
-  <li><a href="#artificial-data-check" id="toc-artificial-data-check" class="nav-link" data-scroll-target="#artificial-data-check">Artificial Data Check</a>
+  <li><a href="#artificial-data-estimation" id="toc-artificial-data-estimation" class="nav-link" data-scroll-target="#artificial-data-estimation">Artificial Data Estimation</a>
   <ul class="collapse">
   <li><a href="#basic-model-1" id="toc-basic-model-1" class="nav-link" data-scroll-target="#basic-model-1">Basic Model</a></li>
   <li><a href="#extended-model" id="toc-extended-model" class="nav-link" data-scroll-target="#extended-model">Extended Model</a></li>
@@ -551,7 +551,7 @@ Y = XA + E \\
 \end{gather}\]</span> The Likelihood function would be: <span class="math display">\[\begin{gather}
 L(A,\Sigma|Y,X) \propto det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(Y-XA)'(Y-XA) \right] \right\} \\
 \\ \propto det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(A-\hat{A})'X'X(A-\hat{A}) \right] \right\} exp \left\{-\frac{1}{2} tr \left[\Sigma^{-1}(Y-X \hat{A})'(Y-X \hat{A}) \right] \right\} \\
-\end{gather}\]</span> from Maximum Likelihood Estimation, <span class="math display">\[\begin{gather}
+\end{gather}\]</span> From Maximum Likelihood Estimation, <span class="math display">\[\begin{gather}
 \hat{A} = (X'X)^{-1}X'Y \\
 \\ \hat{\Sigma} = \frac{1}{T} (Y-X \hat{A})'(Y-X \hat{A})
 \end{gather}\]</span></p>
@@ -705,7 +705,7 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 \bar{S}_{\kappa} = \underline{S}_{\kappa}+tr \left[ \Sigma^{-1} (A-\underline{A})^{'} \underline{V}^{-1} (A-\underline{A})\right] \\
 \\ \bar{\nu}_{\kappa} = \underline{\nu}_{\kappa}+NK
 \end{gather}\]</span></p>
-<p>Gibbs Sampler can be conducted to get the posterior draws of the extended model, for which we can,</p>
+<p><strong>Gibbs Sampler</strong> can be conducted to get the posterior draws of the extended model, for which we can,</p>
 <p>Initialize <span class="math inline">\(\kappa\)</span> at <span class="math inline">\(\kappa^{(0)}\)</span>.</p>
 <p>At each iteration s:</p>
 <ol type="1">
@@ -764,8 +764,8 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 </div>
 <p>The sign restrictions would be implied in the same way as the basic model.</p>
 </section>
-<section id="artificial-data-check" class="level2">
-<h2 class="anchored" data-anchor-id="artificial-data-check">Artificial Data Check</h2>
+<section id="artificial-data-estimation" class="level2">
+<h2 class="anchored" data-anchor-id="artificial-data-estimation">Artificial Data Estimation</h2>
 <p>1000 observations of bi-variate Gaussian random walk processes with the covariance matrix equal to the identity matrix of order 2 are generated as <a href="#fig-actificial-data">Figure&nbsp;5</a> to test whether the modeling frameworks are able to estimate true parameters of the data generating process.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow=</span><span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">2</span>))</span>
@@ -789,7 +789,19 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 </div>
 </div>
 <div class="cell">
-
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Y       <span class="ot">=</span> RW[<span class="dv">2</span><span class="sc">:</span><span class="fu">nrow</span>(RW),]</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>X       <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">1</span>,<span class="fu">nrow</span>(Y),<span class="dv">1</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>X       <span class="ot">=</span> <span class="fu">cbind</span>(X,RW[<span class="dv">2</span><span class="sc">:</span> <span class="fu">nrow</span>(RW)<span class="sc">-</span><span class="dv">1</span>,])</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>N       <span class="ot">=</span> <span class="fu">ncol</span>(Y)      <span class="co"># number of variables</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>p       <span class="ot">=</span> <span class="dv">1</span>            <span class="co"># number of lags</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>S       <span class="ot">=</span> <span class="dv">50000</span>        <span class="co"># sample size</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>K       <span class="ot">=</span> N<span class="sc">*</span>p <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>A.hat       <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">t</span>(X)<span class="sc">%*%</span>X)<span class="sc">%*%</span><span class="fu">t</span>(X)<span class="sc">%*%</span>Y                </span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>Sigma.hat   <span class="ot">=</span> <span class="fu">t</span>(Y<span class="sc">-</span>X<span class="sc">%*%</span>A.hat)<span class="sc">%*%</span>(Y<span class="sc">-</span>X<span class="sc">%*%</span>A.hat)<span class="sc">/</span><span class="fu">nrow</span>(Y)   </span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>restrictions <span class="ot">=</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>,<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="basic-model-1" class="level3">
 <h3 class="anchored" data-anchor-id="basic-model-1">Basic Model</h3>
@@ -872,6 +884,17 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 </div>
 <div class="cell">
 
+</div>
+<p><a href="#fig-kappa-dist">Figure&nbsp;6</a> shows the distribution of Gibbs Sampler draws of <span class="math inline">\(\kappa\)</span>, which is right skewed and strictly positive, which make it appropriate to parameterize variance parameters.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-kappa-dist" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/fig-kappa-dist-1.png" class="img-fluid figure-img" width="672"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;6: Gibbs Sampler draws of kappa</figcaption><p></p>
+</figure>
+</div>
+</div>
 </div>
 <div class="cell">
 

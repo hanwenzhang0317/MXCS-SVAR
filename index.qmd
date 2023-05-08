@@ -335,7 +335,7 @@ The Likelihood function would be:
 L(A,\Sigma|Y,X) \propto det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(Y-XA)'(Y-XA) \right] \right\} \\
 \\ \propto det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(A-\hat{A})'X'X(A-\hat{A}) \right] \right\} exp \left\{-\frac{1}{2} tr \left[\Sigma^{-1}(Y-X \hat{A})'(Y-X \hat{A}) \right] \right\} \\
 \end{gather}
-from Maximum Likelihood Estimation,
+From Maximum Likelihood Estimation,
 \begin{gather}
 \hat{A} = (X'X)^{-1}X'Y \\
 \\ \hat{\Sigma} = \frac{1}{T} (Y-X \hat{A})'(Y-X \hat{A})
@@ -541,7 +541,7 @@ which we recognise the kernel of inverse gamma 2 distribution with
 \end{gather}
 
 
-Gibbs Sampler can be conducted to get the posterior draws of the extended model, for which we can, 
+**Gibbs Sampler** can be conducted to get the posterior draws of the extended model, for which we can, 
 
 Initialize $\kappa$ at $\kappa^{(0)}$. 
 
@@ -606,7 +606,7 @@ DrawPosterior.e <- function (Y,X,nu.prior,A.prior,V.prior,S.prior,nu.kappa,S.kap
 
 The sign restrictions would be implied in the same way as the basic model. 
 
-## Artificial Data Check
+## Artificial Data Estimation
 
 1000 observations of bi-variate Gaussian random walk processes with the covariance matrix equal to the identity matrix of order 2 are generated as @fig-actificial-data to test whether the modeling frameworks are able to estimate true parameters of the data generating process. 
 
@@ -627,15 +627,15 @@ plot.ts(diff(RW2),main="First difference of Random Walk 2", col=4)
 RW  <- cbind(RW1,RW2)
 ```
 
-```{r artificial data setting}
+```{r artificial data model setting}
+#| echo: true
 Y       = RW[2:nrow(RW),]
 X       = matrix(1,nrow(Y),1)
 X       = cbind(X,RW[2: nrow(RW)-1,])
 
 N       = ncol(Y)      # number of variables
-p       = 1      # number of lags
-S       = 50000  # sample size
-h       = 8      # number of periods ahead of forecasting
+p       = 1            # number of lags
+S       = 50000        # sample size
 K       = N*p + 1
 
 A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y                
@@ -732,6 +732,22 @@ A.posterior <- posterior.e$A.posterior.e
 B1.tilde.s <- posterior.e$B1.tilde.s.e
 B.posterior <- posterior.e$B.posterior.e
 kappa <- posterior.e$kappa.e
+```
+
+
+@fig-kappa-dist shows the distribution of Gibbs Sampler draws of $\kappa$, which is right skewed and strictly positive, which make it appropriate to parameterize variance parameters. 
+```{r}
+#| label: fig-kappa-dist
+#| fig-cap: "Gibbs Sampler draws of kappa"
+hist(kappa,
+     main=expression(paste("Distribution of ",kappa, " draws")),
+     freq=FALSE,
+     xlab = expression(kappa),
+     breaks = 1000,
+     xlim = c(0,1),
+     col = "turquoise4",
+     lty = "blank")
+
 ```
 
 ```{r apply sign restriction-extended model}
