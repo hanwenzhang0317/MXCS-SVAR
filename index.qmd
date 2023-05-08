@@ -413,7 +413,7 @@ GetPrior.parameters <- function (N,p,Sigma.hat,nu.kappa,S.kappa) {
 
 ```{r}
 #| echo: true
-GetPoesterior.parameters <- function (X,Y,A.prior,nu.prior,S.prior,V.prior) {
+GetPosterior.parameters <- function (X,Y,A.prior,nu.prior,S.prior,V.prior) {
   
   V.bar.inv <- t(X)%*%X + diag(1/diag(V.prior))
   V.bar <- solve(V.bar.inv)
@@ -502,7 +502,7 @@ ImposeSignRestriction <- function (restrictions,N,S,p,A.posterior,Sigma.posterio
 ```
 
 
-## Extented Model 
+## Extended Model 
 In the extended model,instead of setting $\kappa_1$ and $\kappa_2$ as fixed values, the overall shrinkage level for auto-regressive slopes $\kappa_1$ is assumed to follow an inverse gamma 2 distribution $IG2(\underline{S}_{\kappa},\underline{\nu}_{\kappa})$, and shrinkage of constant term $\kappa_2$ can be set as $100 \times \kappa_1$. 
 
 Under this setting, 
@@ -655,7 +655,7 @@ nu.prior <- prior.parameters$nu.prior
 ```
 
 ```{r generating normal-inverse Wishard posterior parameters}
-poesterior.parameters.iw <- GetPoesterior.parameters(X,Y,A.prior,nu.prior,S.prior,V.prior)
+poesterior.parameters.iw <- GetPosterior.parameters(X,Y,A.prior,nu.prior,S.prior,V.prior)
 
 A.bar <- poesterior.parameters.iw$A.bar
 V.bar <- poesterior.parameters.iw$V.bar
@@ -766,7 +766,7 @@ for (s in 1:S2){
 }
 ```
 
-@tbl-Acheck2 and @tbl-Scheck2 also shows desired results, suggesting the extented model is also working. 
+@tbl-Acheck2 and @tbl-Scheck2 also shows desired results, suggesting the extended model is also working. 
 ```{r}
 #| label: tbl-Acheck2
 #| tbl-cap: Extended Model - A 

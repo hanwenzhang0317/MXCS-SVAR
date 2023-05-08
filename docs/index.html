@@ -159,11 +159,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#estimation-framework" id="toc-estimation-framework" class="nav-link" data-scroll-target="#estimation-framework">Estimation Framework</a>
   <ul class="collapse">
   <li><a href="#basic-model" id="toc-basic-model" class="nav-link" data-scroll-target="#basic-model">Basic Model</a></li>
-  <li><a href="#extented-model" id="toc-extented-model" class="nav-link" data-scroll-target="#extented-model">Extented Model</a></li>
+  <li><a href="#extended-model" id="toc-extended-model" class="nav-link" data-scroll-target="#extended-model">Extended Model</a></li>
   <li><a href="#artificial-data-estimation" id="toc-artificial-data-estimation" class="nav-link" data-scroll-target="#artificial-data-estimation">Artificial Data Estimation</a>
   <ul class="collapse">
   <li><a href="#basic-model-1" id="toc-basic-model-1" class="nav-link" data-scroll-target="#basic-model-1">Basic Model</a></li>
-  <li><a href="#extended-model" id="toc-extended-model" class="nav-link" data-scroll-target="#extended-model">Extended Model</a></li>
+  <li><a href="#extended-model-1" id="toc-extended-model-1" class="nav-link" data-scroll-target="#extended-model-1">Extended Model</a></li>
   </ul></li>
   </ul></li>
   <li><a href="#empirical-estimation" id="toc-empirical-estimation" class="nav-link" data-scroll-target="#empirical-estimation">Empirical Estimation</a></li>
@@ -598,7 +598,7 @@ p(A,\Sigma|Y,X) \propto det{(\Sigma)}^{-\frac{T+N+K+ \underline{\nu}
 
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>GetPoesterior.parameters <span class="ot">&lt;-</span> <span class="cf">function</span> (X,Y,A.prior,nu.prior,S.prior,V.prior) {</span>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>GetPosterior.parameters <span class="ot">&lt;-</span> <span class="cf">function</span> (X,Y,A.prior,nu.prior,S.prior,V.prior) {</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  V.bar.inv <span class="ot">&lt;-</span> <span class="fu">t</span>(X)<span class="sc">%*%</span>X <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(V.prior))</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  V.bar <span class="ot">&lt;-</span> <span class="fu">solve</span>(V.bar.inv)</span>
@@ -677,8 +677,8 @@ p(A,\Sigma|Y,X) \propto det{(\Sigma)}^{-\frac{T+N+K+ \underline{\nu}
 <span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="extented-model" class="level2">
-<h2 class="anchored" data-anchor-id="extented-model">Extented Model</h2>
+<section id="extended-model" class="level2">
+<h2 class="anchored" data-anchor-id="extended-model">Extended Model</h2>
 <p>In the extended model,instead of setting <span class="math inline">\(\kappa_1\)</span> and <span class="math inline">\(\kappa_2\)</span> as fixed values, the overall shrinkage level for auto-regressive slopes <span class="math inline">\(\kappa_1\)</span> is assumed to follow an inverse gamma 2 distribution <span class="math inline">\(IG2(\underline{S}_{\kappa},\underline{\nu}_{\kappa})\)</span>, and shrinkage of constant term <span class="math inline">\(\kappa_2\)</span> can be set as <span class="math inline">\(100 \times \kappa_1\)</span>.</p>
 <p>Under this setting, <span class="math display">\[\begin{gather}
 p(\kappa|A,\Sigma,Y,X) \\
@@ -876,8 +876,8 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 </div>
 </div>
 </section>
-<section id="extended-model" class="level3">
-<h3 class="anchored" data-anchor-id="extended-model">Extended Model</h3>
+<section id="extended-model-1" class="level3">
+<h3 class="anchored" data-anchor-id="extended-model-1">Extended Model</h3>
 <p>Then we can use the same data to check whether the extension model is working.</p>
 <div class="cell">
 
@@ -902,7 +902,7 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 <div class="cell">
 
 </div>
-<p><a href="#tbl-Acheck2">Table&nbsp;7</a> and <a href="#tbl-Scheck2">Table&nbsp;8</a> also shows desired results, suggesting the extented model is also working.</p>
+<p><a href="#tbl-Acheck2">Table&nbsp;7</a> and <a href="#tbl-Scheck2">Table&nbsp;8</a> also shows desired results, suggesting the extended model is also working.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="tbl-Acheck2" class="anchored">
