@@ -109,11 +109,7 @@ df.o$Interest <- as.numeric(as.character(interest))
 df.o$Stock <- as.numeric(aord_q)
 ```
 
-
 ```{r data visualization}
-#| echo: false
-#| message: false
-#| warning: false
 #| label: fig-plot
 #| fig-cap: "Time Series Plots (in nominal prices)"
 
@@ -129,15 +125,12 @@ for (i in 1:ncol(df.o)){
 }
 
 ```
+
 While GDP and government expenditure depict upward trend, government revenue shows increasing trend with seasonal patterns. Public debt kept relatively flat before the Global Financial Crisis (GFC), and started to increase after. Interest rate has a downward trend while stock prices exhibiting significant drop during GFC.
 
 Variables are transformed into real per-capita terms and compute logarithms as in Mumtaz and Theodoridis (2020), except inflation and cash rate target. In this stage, only the sample including all variables ranging from 2001 Q2 to 2022 Q4 is considered in the following section. Plots are provided as @fig-line-plot.
 
 ```{r wrangling data}
-#| echo: false
-#| message: false
-#| warning: false
-
 # all in real per capita terms except inflation and interest 
 df.log <- as.data.frame(merge(log(gdp_real_pc),
             log(gov_spend_pc),
@@ -152,9 +145,6 @@ df.log$Stock <- log(as.numeric(aord))
 
 @tbl-irf provides statistics summary of all variables from 2001Q2 to 2022Q4. 
 ```{r}
-#| echo: false
-#| message: false
-#| warning: false
 #| label: tbl-irf
 #| tbl-cap: Statistics Summary 
 
@@ -176,9 +166,6 @@ knitr::kable(s, digits = 3,index=TRUE)
 
 
 ```{r data visualization}
-#| echo: false
-#| message: false
-#| warning: false
 #| label: fig-line-plot
 #| fig-cap: "Time Series Plots (green lines are log transformation)"
 
@@ -202,9 +189,6 @@ for (i in 1:ncol(df)){
 ACF Plots as in @fig-acf-plot show non-zero autocorrelations for at least 15 lags of variables except Inflation. PACF Plots as @fig-pacf-plot indicate significant and strong memory at the first lag of variables except Inflation, of, for which the first lag is also statistically significant but not strong.  
 
 ```{r data properties: ACF}
-#| echo: false
-#| message: false
-#| warning: false
 #| label: fig-acf-plot
 #| fig-cap: "ACF Plots"
 par(mfrow=c(4,2), mar=c(2,2,2,2))
@@ -215,9 +199,6 @@ for (j in 1:length(colnames(df))){
 ```
 
 ```{r data properties: PACF}
-#| echo: false
-#| message: false
-#| warning: false
 #| label: fig-pacf-plot
 #| fig-cap: "PACF Plots"
 par(mfrow=c(4,2), mar=c(2,2,2,2))
@@ -254,7 +235,6 @@ knitr::kable(adf, index=TRUE)
 Take the first difference and run the Augmented Dickey-Fuller Test again, it is sensible to conclude that variables except public debt and interest rate are integrated of order 1 as in @tbl-adf-diff. Public debt is integrated with order 2, since its second-order difference is stationary as @tbl-adf-diff2.  
 
 ```{r}
-#| echo: false
 #| message: false
 #| warning: false
 #| label: tbl-adf-diff
@@ -274,9 +254,7 @@ knitr::kable(adf.diff, index=TRUE)
 
 ```
 
-
 ```{r}
-#| echo: false
 #| message: false
 #| warning: false
 #| label: tbl-adf-diff2
@@ -290,7 +268,19 @@ adf.diff2[,"p-value"] <-  round(as.numeric(adf.test(diff(diff(df$Debt)))[4]),3)
 knitr::kable(adf.diff2, index=TRUE)
 ```
 
-
+```{r reserve for real estimation}
+# # create a numeric df, which would benefit computing 
+# df.num <- cbind(
+#   as.numeric(df$GDP),
+#   as.numeric(df$Spending),
+#   as.numeric(df$Revenue),
+#   as.numeric(df$Debt),
+#   as.numeric(df$Inflation),
+#   as.numeric(df$Interest),
+#   as.numeric(df$Stock)
+# )
+# colnames(df.num) <- colnames(df)
+```
 
 # Methodology
 
@@ -320,9 +310,9 @@ Y_t=\begin{pmatrix}
 \end{align}
 
 The reduced form representation is: 
-\begin{align}
+\begin{align*}
 Y_t = \mu_0 + \sum_{i=1}^{p}A_{i}Y_{t-i}+\epsilon_t
-\end{align}
+\end{align*}
 \begin{align}
 \epsilon_t|Y_{t-1}\sim iid(0_N,\Sigma)
 \end{align}
@@ -332,31 +322,103 @@ The covariance matrix of $\epsilon_t$ can be written as:
 \Sigma=B_0^{-1}{B_0^{-1}}^{'}
 \end{align}
 
-# Estimation 
-
-```{r}
-# create a numeric df, which would benefit computing 
-df.num <- cbind(
-  as.numeric(df$GDP),
-  as.numeric(df$Spending),
-  as.numeric(df$Revenue),
-  as.numeric(df$Debt),
-  as.numeric(df$Inflation),
-  as.numeric(df$Interest),
-  as.numeric(df$Stock)
-)
-colnames(df.num) <- colnames(df)
-```
-
-
+# Estimation Framework
 
 ## Basic Model 
+Rewrite the reduced form equation in matrix:
+\begin{gather}
+Y = XA + E \\
+\\ E|X \sim MN_{T \times N}(0_{T \times N},\Sigma,I_T) 
+\end{gather}
+The Likelihood function would be: 
+\begin{gather}
+L(A,\Sigma|Y,X) \propto det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(Y-XA)'(Y-XA) \right] \right\} \\
+\\ \propto det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(A-\hat{A})'X'X(A-\hat{A}) \right] \right\} exp \left\{-\frac{1}{2} tr \left[\Sigma^{-1}(Y-X \hat{A})'(Y-X \hat{A}) \right] \right\} \\
+\end{gather}
+from Maximum Likelihood Estimation,
+\begin{gather}
+\hat{A} = (X'X)^{-1}X'Y \\
+\\ \hat{\Sigma} = \frac{1}{T} (Y-X \hat{A})'(Y-X \hat{A})
+\end{gather}
+
+In the basic model, we have prior as:
+\begin{gather}
+p(A,\Sigma) = p(A|\Sigma) p(\Sigma) \\
+\\ A|\Sigma \sim MN_{K \times N} (\underline{A}, \Sigma , \underline{V}) \\
+\\ \Sigma \sim IW_{N}(\underline{S},\underline{\nu})
+\end{gather}
+
+Parameters are as follows: 
+\begin{gather}
+\underline{A} = [0_{N \times 1}, I_N, 0_{N \times (p-1)N}]' \\ 
+\\ Var[vec(A)] = \Sigma \otimes  \underline{V} \\
+\\ \underline{V} = diag([\kappa_2 \quad \kappa_1 (p^{-2} \otimes I_N)]) \\
+\\ p = [1,2,...p]
+\end{gather}
+
+The full conditional posterior is: 
+\begin{gather}
+p(A,\Sigma|Y,X) = p(A|Y,X,\Sigma)p(\Sigma|Y,X) \\
+\\ p(A|Y,X,\Sigma) = MN_{K \times N}(\bar{A}, \Sigma, \bar{V}) \\ 
+\\ p(\Sigma | Y, X) = IW_N(\bar{S},\bar{\nu})
+\end{gather}
+
+Derive the full conditional posterior: 
+\begin{gather}
+P(A,\Sigma|Y,X) \propto L(A,\Sigma|Y,X)p(A,\Sigma) \\
+\\ \propto L(A,\Sigma|Y,X)p(A|\Sigma)p(\Sigma) \\
+\\ det(\Sigma)^{-\frac{T}{2}} \times exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(A-\hat{A})' X'X (A-\hat{A})\right] \right\} \\
+\\ \times exp\left\{-\frac{1}{2}tr \left[ \Sigma^{-1}(Y-X\hat{A})'(Y-X\hat{A}) \right] \right\} \\
+\\ \times det(\Sigma)^{-\frac{N+K+\underline{\nu}+1}{2}} \\
+\\ \times exp\left\{-\frac{1}{2}tr \left[ \Sigma^{-1}(A-\underline{A})'\underline{V}^{-1}(A-\underline{A}) \right] \right\} \\ 
+\\ \times exp \left\{ -\frac{1}{2} tr \left[ \Sigma^{-1} \underline{S} \right] \right\}
+\end{gather}
+
+\begin{gather}
+p(A,\Sigma|Y,X) \propto det{(\Sigma)}^{-\frac{T+N+K+ \underline{\nu}
++1}{2}} \times exp \left\{-\frac{1}{2}tr \left[ \Sigma^{-1} \left[(A-\hat{A})^{'}X'X(A-\hat{A})+(A-\underline{A})^{'} \underline{V}^{-1}(A-\underline{A}) + (Y-X\hat{A})^{'}(Y-X\hat{A})+\underline{S}  \right]\right] \right\}\\
+\\ \propto det{(\Sigma)}^{-\frac{T+N+K+ \underline{\nu}
++1}{2}} \times exp\left\{ -\frac{1}{2} tr \left[ \Sigma^{-1} \left[ (A-\bar{A})^{'} \bar{V}^{-1} (A-\bar{A})+\underline{S} +Y^{'}Y + \underline{A}^{'} \underline{V}^{-1}\underline{A} -\bar{A}^{'} \bar{V}^{-1}\bar{A}\right]\right]\right\}
+\end{gather}
+
+where we have posterior distribution parameters:
+
+\begin{gather}
+\bar{V} = (X^{'}X+ \underline{V}^{-1})^{-1} \\ 
+\\ \bar{A} = \bar{V}(X^{'}Y+\underline{V}^{-1} \underline{A}) \\ 
+\\ \bar{\nu} = T + \underline{\nu} \\ 
+\\ \bar{S} = \underline{S} + Y^{'}Y +  A^{'}\underline{V}^{-1}\underline{A} - \bar{A}^{'}\bar{V}^{-1}\bar{A}
+\end{gather}
 
 
+From above derivation, we can compute functions to calculate parameters:
+```{r}
+# #| echo: true
+# GetPrior.parameters <- function (N,p,kappa.1=1^2,kappa.2=100,Sigma.hat) {
+#   
+#   A.prior = matrix(0,(1+N*p),N)
+#   A.prior[2:(N+1),] = diag(N) 
+#   V.prior = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
+#   S.prior = diag(diag(Sigma.hat))
+#   nu.prior = N+1
+#   
+#   return (list(A.prior = A.prior,
+#                V.prior = V.prior,
+#                S.prior = S.prior,
+#                nu.prior = nu.prior))
+# }
+```
 
 ```{r}
-#| echo: true
-GetPrior.parameters <- function (N,p,kappa.1=1^2,kappa.2=100,Sigma.hat) {
+GetPrior.parameters.g <- function (N,p,Sigma.hat,nu.kappa,S.kappa,Extended) {
+ 
+  if (Extended) {
+    kappa.1 <- S.kappa / rchisq(1, df=nu.kappa) # IG2 draw 
+    kappa.2 <- 10 * kappa.1
+  } else {
+    kappa.1 <- 1 
+    kappa.2 <- 100 
+  }
   
   A.prior = matrix(0,(1+N*p),N)
   A.prior[2:(N+1),] = diag(N) 
@@ -364,7 +426,7 @@ GetPrior.parameters <- function (N,p,kappa.1=1^2,kappa.2=100,Sigma.hat) {
   S.prior = diag(diag(Sigma.hat))
   nu.prior = N+1
   
-  return (list(A.prior = A.prior,
+  return (list(A.prior=A.prior,
                V.prior = V.prior,
                S.prior = S.prior,
                nu.prior = nu.prior))
@@ -388,7 +450,9 @@ GetPoesterior.parameters <- function (X,Y,A.prior,nu.prior,S.prior,V.prior) {
 }
 ```
 
-```{r draw poesterior parameters}
+Then posterior distributions can be drawn: 
+
+```{r draw poesterior}
 #| echo: true
 DrawPosterior <- function (N,S,p,nu.bar,S.bar,A.bar,V.bar){
   Sigma.posterior   = rWishart(S, df=nu.bar, Sigma=solve(S.bar))  
@@ -405,12 +469,7 @@ DrawPosterior <- function (N,S,p,nu.bar,S.bar,A.bar,V.bar){
     A.posterior[,,s]= A.bar + L%*%A.posterior[,,s]%*%cholSigma.s 
     B1.tilde.s[,,s] = B.posterior[,,s]%*%t(A.posterior[,,s])
   }
-  
-  # A.draws <- round(apply(A.posterior,1:2,mean),4)  # (Np+1) by N 
-  # B.draws <- round(apply(B.posterior,1:2,mean),4)  # N by N
-  # B1.draws <- round(apply(B.posterior,1:2,mean),4) # N by (1+Np)
-  # Sigma.draws <-round(apply(Sigma.posterior,1:2,mean),4)
-  
+
   return(list(A.posterior = A.posterior,
               B.posterior = B.posterior,
               B1.tilde.s = B1.tilde.s,
@@ -419,9 +478,11 @@ DrawPosterior <- function (N,S,p,nu.bar,S.bar,A.bar,V.bar){
 }
 ```
 
+After the posterior draws,we apply sign restrictions to  
+
 ```{r}
 #| echo: true
-ImposeSignRestriction <- function (restrictions, N,S,p,A.posterior,Sigma.posterior,B.posterior,B1.tilde.s){
+ImposeSignRestriction <- function (restrictions,N,S,p,A.posterior,Sigma.posterior,B.posterior,B1.tilde.s){
   
   R1 <- diag(restrictions)
   B0.draws      = array(NA,c(N,N,S))
@@ -442,10 +503,10 @@ ImposeSignRestriction <- function (restrictions, N,S,p,A.posterior,Sigma.posteri
     Q           = qr.Q(QR,complete=TRUE)
     R           = qr.R(QR,complete=TRUE)
     Q           = t(Q %*% diag(sign(diag(R))))
-    B0          = Q%*%B0.tilde                    # 7 by 7 
-    B1          = Q%*%B1.tilde                    # 7 by 7 
+    B0          = Q%*%B0.tilde                    # N by N 
+    B1          = Q%*%B1.tilde                    # N by N
     B0.inv      = solve(B0)      
-    check       = prod(R1 %*% B0.inv %*% diag(N)[,2] > 0)
+    check       = prod(R1 %*% B0.inv %*% diag(N)[,1] > 0)
     if (check==1){sign.restrictions.do.not.hold=FALSE}
     i=i+1
     }
@@ -460,165 +521,61 @@ ImposeSignRestriction <- function (restrictions, N,S,p,A.posterior,Sigma.posteri
 ```
 
 
-### Not using Functions 
-
-```{r prior distribution}
-# # Minnesota prior
-# # dimension of A.prior should match (1+Np)*N -> 43 * 12 in this case
-# kappa.1     = 1^2
-# kappa.2     = 100
-# kappa.3     = 1
-# A.prior     = matrix(0,nrow(A.hat),ncol(A.hat))
-#   # first row of A.prior is 0s
-#   # second to (N+1)th row is kappa.3*Identity(N)
-#   # the rest rows are 0s
-# A.prior[2:(N+1),] = kappa.3*diag(N)
-# V.prior     = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N))) # dimension is (Np+1)*(Np+1)
-# S.prior     = diag(diag(Sigma.hat))  # dimension is N*N
-# nu.prior    = N+1                    # scalar
-```
-
-```{r normal-inverse Wishard posterior parameters}
-# V.bar.inv   = t(X)%*%X + diag(1/diag(V.prior))  # diag(1/diag(M)) = M ^ (-1)
-# V.bar       = solve(V.bar.inv)
-# A.bar       = V.bar%*%(t(X)%*%Y + diag(1/diag(V.prior))%*%A.prior)
-# nu.bar      = nrow(Y) + nu.prior
-# S.bar       = S.prior + t(Y)%*%Y + t(A.prior)%*%diag(1/diag(V.prior))%*%A.prior - t(A.bar)%*%V.bar.inv%*%A.bar
-# S.bar.inv   = solve(S.bar)
-```
-
-```{r posterior draw}
-# Sigma.posterior   = rWishart(S, df=nu.bar, Sigma=S.bar.inv)
-# Sigma.posterior   = apply(Sigma.posterior,3,solve)
-# Sigma.posterior   = array(Sigma.posterior,c(N,N,S))   # reshape into S@N*N matrices
-# 
-# A.posterior       = array(rnorm(prod(c(dim(A.bar),S))),c(dim(A.bar),S))
-# # draw 43*7*10000 normal random variables, and reshape
-# B.posterior       = array(NA,c(N,N,S))
-# L                 = t(chol(V.bar)) # Compute the transpose of Choleski factorization of matrix
-# B1.tilde.s        = array(NA,c(N,(1+N*p),S)) # the dimension is N by (1+N*p)
-# 
-# for (s in 1:S){
-#   cholSigma.s     = chol(Sigma.posterior[,,s])
-#   B.posterior[,,s]= t(cholSigma.s) ### this is B0.tilde.s, 7 by 7
-#   A.posterior[,,s]= A.bar + L%*%A.posterior[,,s]%*%cholSigma.s # this is 29 by 7
-#   B1.tilde.s[,,s] = B.posterior[,,s]%*%t(A.posterior[,,s])
-# }
-# 
-# A.draws <- round(apply(A.posterior,1:2,mean),4)  # (Np+1) by N
-# B.draws <- round(apply(B.posterior,1:2,mean),4)  # N by N
-# B1.draws <- round(apply(B.posterior,1:2,mean),4) # N by (1+Np)
-# Sigma.draws <-round(apply(Sigma.posterior,1:2,mean),4)
-```
-
-```{r}
-# define government spending shocks 
-# restrictions = c(-1,-1,-1, 1, 1,-1,-1)    
-# 
-# R1 <- diag(restrictions)
-# B0.draws      = array(NA,c(N,N,S))
-# B1.draws      = array(NA,c(N,(1+N*p),S))
-# i.vec = c()
-# 
-# pb = txtProgressBar(min = 0, max = S, initial = 0, style = 1) 
-# for (s in 1:S){
-#   setTxtProgressBar(pb,s)
-#   
-#   A             = A.posterior[,,s]
-#   Sigma         = Sigma.posterior[,,s]
-#   B0.tilde     = B.posterior[,,s]
-#   B1.tilde      = B1.tilde.s[,,s]
-#   i=1
-#   sign.restrictions.do.not.hold = TRUE 
-#   
-#   while (sign.restrictions.do.not.hold){
-#   X           = matrix(rnorm(N*N),N,N) # draw iid normal X 
-#   QR          = qr(X, tol = 1e-10)
-#   Q           = qr.Q(QR,complete=TRUE)
-#   R           = qr.R(QR,complete=TRUE)
-#   Q           = t(Q %*% diag(sign(diag(R))))
-#   B0          = Q%*%B0.tilde # N by N 
-#   B1          = Q%*%B1.tilde # 7 by 7 
-#   B0.inv      = solve(B0)
-#   check       = prod(R1 %*% B0.inv %*% diag(N)[,2] > 0)
-#   if (check==1){sign.restrictions.do.not.hold=FALSE}
-#   i=i+1
-#   }
-#   
-#   # print(i)
-#   i.vec = c(i.vec,i)
-#   B0.draws[,,s] = B0
-#   B1.draws[,,s] = B1
-# }
-# close(pb)
-```
-
-
 ## Extented Model 
 
-```{r}
-GetPrior.parameters.g <- function (N,p,Sigma.hat,nu.kappa,S.kappa,Extended) {
- 
-  if (Extended) {
-    kappa.1 <- S.kappa / rchisq(1, df=nu.kappa) # IG2 draw 
-    kappa.2 <- 10 * kappa.1
-  } else {
-    kappa.1 <- 1 
-    kappa.2 <- 100 
-  }
-  
-  A.prior = matrix(0,(1+N*p),N)
-  A.prior[2:(N+1),] = diag(N) 
-  V.prior = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
-  S.prior = diag(diag(Sigma.hat))
-  nu.prior = N+1
-  
-  return (list(A.prior=A.prior,
-               V.prior = V.prior,
-               S.prior = S.prior,
-               nu.prior = nu.prior,
-               kappa = kappa.1))
-}
-```
+In the extended model, instead of setting $\kappa_1$ and $\kappa_2$ as fixed values, we can assume $\kappa_1$ is from an inverse gamma 2 distribution as
+
+\begin{align}
+\kappa \sim IG2(\underline{S}_ \kappa,\underline{\nu}_ \kappa)
+\end{align}
+
+$\kappa_2$ can be set as $100 \times \kappa_1$. 
 
 ```{r}
-# # This functions should work
-# GetPoesterior.parameters.e <- function (X,Y,A.prior,nu.prior,S.prior,V.prior,kappa) {
+# GetPrior.parameters.g <- function (N,p,Sigma.hat,nu.kappa,S.kappa,Extended) {
+#  
+#   if (Extended) {
+#     kappa.1 <- S.kappa / rchisq(1, df=nu.kappa) # IG2 draw 
+#     kappa.2 <- 10 * kappa.1
+#   } else {
+#     kappa.1 <- 1 
+#     kappa.2 <- 100 
+#   }
 #   
-#   V.bar.inv <- t(X)%*%X + solve(kappa*V.prior)
-#   V.bar <- solve(V.bar.inv)
-#   A.bar <- V.bar%*%(t(X)%*%Y + diag(1/diag(kappa*V.prior))%*%A.prior)
-#   nu.bar <- nrow(Y) + nu.prior
-#   S.bar <- S.prior + t(Y)%*%Y + t(A.prior)%*%diag(1/diag(kappa*V.prior))%*%A.prior - t(A.bar)%*%V.bar.inv%*%A.bar
+#   A.prior = matrix(0,(1+N*p),N)
+#   A.prior[2:(N+1),] = diag(N) 
+#   V.prior = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
+#   S.prior = diag(diag(Sigma.hat))
+#   nu.prior = N+1
 #   
-#   return (list(V.bar = V.bar,
-#                A.bar = A.bar,
-#                nu.bar = nu.bar,
-#                S.bar = S.bar))
+#   return (list(A.prior=A.prior,
+#                V.prior = V.prior,
+#                S.prior = S.prior,
+#                nu.prior = nu.prior))
 # }
 ```
 
 Construction of Gibbs Sampler Algorithm: 
 
-Initialize $\kappa$ at $\kappa^{0}$. 
+Initialize $\kappa$ at $\kappa^{(0)}$. 
 
 At each iteration s: 
 
-1. Draw $(A,\Sigma)^{s} \sim p(A,\Sigma| X,Y,\kappa^{s-1})$
-2. Draw $\kappa^{s} \sim p(\kappa|Y,X,A,\Sigma)$
+1. Draw $(A,\Sigma)^{(s)} \sim p(A,\Sigma| X,Y,\kappa^{(s-1)})$
+2. Draw $\kappa^{(s)} \sim p(\kappa|Y,X,A,\Sigma)$
 
 Repeat 1 and 2 for $(S_1 + S_2)$ times.
 
 Discard the first $S_1$. 
 
 ```{r}
-DrawPosterior.e <- function (N,p,nu.prior,S.bar,A.bar,S1,S2){
+DrawPosterior.e <- function (N,p,Y,X,nu.prior,A.prior,V.prior,S.prior,nu.kappa,S.kappa,S1,S2){
   
-  kappa <- c()
-  A.posterior <- array(NA,c((1+N*P),N,(S1+S2)))
-  s <- array(c(N,N,(S1+S2))) 
-  B.posterior       = array(NA,c(N,N,(S1+S2)))
-  B1.tilde.s        = array(NA,c(N,(1+N*p),(S1+S2)))
+  kappa           <- c()
+  A.posterior     <- array(NA,c((1+N*p),N,(S1+S2)))
+  Sigma.posterior <- array(NA,c(N,N,(S1+S2))) 
+  B.posterior     <- array(NA,c(N,N,(S1+S2)))
+  B1.tilde.s      <- array(NA,c(N,(1+N*p),(S1+S2)))
   
   # Initialize kappa.0 
   kappa[1] <- 1 
@@ -633,33 +590,44 @@ DrawPosterior.e <- function (N,p,nu.prior,S.bar,A.bar,S1,S2){
               # therefore, kappa[s] = kappa.(s-1)
     V.bar.inv <- t(X)%*%X + solve(kappa[s]*V.prior)
     V.bar     <- solve(V.bar.inv)
-     
     
     A.bar     <- V.bar%*%(t(X)%*%Y + diag(1/diag(kappa[s]*V.prior))%*%A.prior)
     S.bar     <- S.prior + t(Y)%*%Y + t(A.prior)%*%diag(1/diag(kappa[s]*V.prior))%*%A.prior - t(A.bar)%*%V.bar.inv%*%A.bar
               
               # Now posterior parameters are computed using kappa values, then we can draw (A Sigma)
-    Sigma.posterior[,,s]   = solve(rWishart(1, df=nu.bar, Sigma=solve(S.bar))) 
-    cholSigma.s            = chol(Sigma.posterior[,,s])
-    A.posterior[,,s]       = matrix(rmvnorm(1,mean=as.vector(A.bar),sigma=Sigma.posterior[,,s]%*%V.bar),ncol=N)               # from lec10 - page 12 
+    draw.sigma = apply(rWishart(1, df=nu.bar, Sigma=solve(S.bar)),3,solve)
+    Sigma.posterior[,,s] = array(draw.sigma,c(N,N))
     
-    L               <- t(chol(V.bar))
-    B1.tilde.s[,,s] <- B.posterior[,,s]%*%t(A.posterior[,,s])
+    cholSigma.s            = chol(Sigma.posterior[,,s])
+    A.posterior[,,s]       = matrix(MASS::mvrnorm(1,as.vector(A.bar),Sigma.posterior[,,s]%x%V.bar),ncol=N)               # from lec10 - page 12 
+    
+    L                <- t(chol(V.bar))
+    B.posterior[,,s] <- t(chol(Sigma.posterior[,,s])) 
+    B1.tilde.s[,,s]  <- B.posterior[,,s]%*%t(A.posterior[,,s])
     
     # STEP 2: draw kappa.s from IG2(S.bar, nu.bar)
               # Note kappa.s = kappa[s+1]
-    S.kappa.bar <- S.kappa + trace(solve(Sigma.posterior[,,s]) %*% t(A.posterior[,,s]-A.prior)%*% solve(V.prior) %*% (A.posterior[,,s]-A.prior))
+    S.kappa.bar <- S.kappa + sum(diag( solve(Sigma.posterior[,,s]) %*% t(A.posterior[,,s]-A.prior)%*% solve(V.prior) %*% (A.posterior[,,s]-A.prior)))
     kappa[s+1]  <- S.kappa.bar / rchisq(1, df=nu.kappa.bar)
-  }                  
+  }   
+  
+  return(list(Sigma.posterior.e = Sigma.posterior[,,(S1+1):(S1+S2)],
+              A.posterior.e = A.posterior[,,(S1+1):(S1+S2)],
+              B1.tilde.s.e = B1.tilde.s[,,(S1+1):(S1+S2)],
+              B.posterior.e = B.posterior[,,(S1+1):(S1+S2)]))
 }
 ```
 
-## Create Artificial Data   
+## Artificial Data Check
 
-
+1000 observations of bi-variate Gaussian random walk processes with the covariance matrix equal to the identity matrix of order 2 are generated as @fig-actificial-data  to test the model framework.
 
 ```{r generate bi-variate Gaussian random walk process}
-set.seed(1)
+#| echo: true
+#| label: fig-actificial-data
+#| fig-cap: "Bi-variate Gaussian random walk"
+par(mfrow=c(2,2))
+set.seed(90007)
 RW1 <- arima.sim(model= list(order = c(0, 1, 0)), n=1000, mean=0, sd=1)
 plot.ts(RW1,main="Random Walk 1", col=4)
 plot.ts(diff(RW1),main="First difference of Random Walk 1", col=4)
@@ -688,34 +656,11 @@ Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)
 restrictions = c(-1,1)
 ```
 
-```{r set-up, get design matrices and MLE}
-# #| echo: true
-# #| message: false
-# #| warning: false
-# N       = 7      # number of variables 
-# p       = 4      # number of lags 
-# S       = 10000  # sample size 
-# h       = 8      # number of periods ahead of forecasting 
-# K       = p + 1 
-# 
-# df.len  = nrow(df.num)
-# Y       = ts(df.num[K:df.len,], start=c(1991,3), frequency=4)
-# X       = matrix(1,nrow(Y),1)
-# 
-# # X is the design matrix, containing 1s and lags of Y 
-# for (i in 1:p){
-#   X     = cbind(X,df.num[K:df.len-i,])
-# }
-# 
-# A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y                # (X'X)^(-1)X'Y
-# Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)    # lecture 7 slides 29 
-
-# restrictions = c(-1,-1,-1, 1, 1,-1,-1) 
-```
+### Basic Model
 
 
 ```{r generating prior parameters}
-prior.parameters = GetPrior.parameters(N,p,kappa.1=1^2,kappa.2=100,Sigma.hat)
+prior.parameters = GetPrior.parameters.g(N,p,Sigma.hat,nu.kappa,S.kappa,FALSE)
 A.prior <- prior.parameters$A.prior
 V.prior <- prior.parameters$V.prior
 S.prior <- prior.parameters$S.prior
@@ -747,7 +692,8 @@ B0.draws <- B.draws.restricted$B0.draws
 B1.draws <- B.draws.restricted$B1.draws
 ```
 
-```{r check do they produce true parameters using simulated data}
+```{r check for basic model}
+
 A.check <- array(NA,c(N+1,N,S))
 S.check <- array(NA,c(N,N,S))
 for (s in 1:S){
@@ -755,114 +701,113 @@ for (s in 1:S){
   S.check[,,s] <- B0.draws[,,s] %*% t(B0.draws[,,s])
   A.check[,,s] <- t(B1.draws[,,s]) %*% B0.draws[,,s]
 }
-
-round(apply(A.check,1:2,mean),4)
-round(apply(S.check,1:2,mean),4)
 ```
 
-
-# Code reservation 
+@tbl-Acheck Shows the rotation matrix 
 ```{r}
-# kappa.1     = 1^2
-# kappa.2     = 100
-# kappa.3     = 1
-# A.prior     = matrix(0,nrow(A.hat),ncol(A.hat))
-# A.prior[2:(N+1),] = kappa.3*diag(N)
-# V.prior     = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N))) 
-# S.prior     = diag(diag(Sigma.hat)) 
-# nu.prior    = N+1                   
+#| label: tbl-Acheck
+#| tbl-cap: Basic Model - A
+d1 <- as.data.frame(round(apply(A.check,1:2,mean),4))
+knitr::kable(d1, index=TRUE)
 ```
 
-```{r prior distribution2x}
-# # Minnesota prior
-# # dimension of A.prior should match (1+Np)*N -> 43 * 12 in this case
-# kappa.1     = 1^2
-# kappa.2     = 100
-# kappa.3     = 1
-# A.prior     = matrix(0,nrow(A.hat),ncol(A.hat))
-#   # first row of A.prior is 0s
-#   # second to (N+1)th row is kappa.3*Identity(N)
-#   # the rest rows are 0s
-# A.prior[2:(N+1),] = kappa.3*diag(N)
-# V.prior     = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N))) # dimension is (Np+1)*(Np+1)
-# S.prior     = diag(diag(Sigma.hat))  # dimension is N*N
-# nu.prior    = N+1                    # scalar
+
+@tbl-Scheck
+```{r}
+#| label: tbl-Scheck
+#| tbl-cap: Basic Model - Sigma 
+d2 <- as.data.frame(round(apply(S.check,1:2,mean),4))
+knitr::kable(d2, index=TRUE)
 ```
 
-```{r normal-inverse Wishard posterior parameters2}
-# V.bar.inv   = t(X)%*%X + diag(1/diag(V.prior))  # diag(1/diag(M)) = M ^ (-1)
-# V.bar       = solve(V.bar.inv)
-# A.bar       = V.bar%*%(t(X)%*%Y + diag(1/diag(V.prior))%*%A.prior)
-# nu.bar      = nrow(Y) + nu.prior
-# S.bar       = S.prior + t(Y)%*%Y + t(A.prior)%*%diag(1/diag(V.prior))%*%A.prior - t(A.bar)%*%V.bar.inv%*%A.bar
-# S.bar.inv   = solve(S.bar)
-```
-
-```{r posterior draw2}
-# Sigma.posterior   = rWishart(S, df=nu.bar, Sigma=S.bar.inv)
-# Sigma.posterior   = apply(Sigma.posterior,3,solve)
-# Sigma.posterior   = array(Sigma.posterior,c(N,N,S))   # reshape into S@N*N matrices
-# 
-# A.posterior       = array(rnorm(prod(c(dim(A.bar),S))),c(dim(A.bar),S))
-# # draw 43*7*10000 normal random variables, and reshape
-# B.posterior       = array(NA,c(N,N,S))
-# L                 = t(chol(V.bar)) # Compute the transpose of Choleski factorization of matrix
-# B1.tilde.s        = array(NA,c(N,(1+N*p),S)) # the dimension is N by (1+N*p)
-# 
-# for (s in 1:S){
-#   cholSigma.s     = chol(Sigma.posterior[,,s])
-#   B.posterior[,,s]= t(cholSigma.s) ### this is B0.tilde.s, 7 by 7
-#   A.posterior[,,s]= A.bar + L%*%A.posterior[,,s]%*%cholSigma.s # this is 29 by 7
-#   B1.tilde.s[,,s] = B.posterior[,,s]%*%t(A.posterior[,,s])
-# }
-# 
-# A.draws <- round(apply(A.posterior,1:2,mean),4)  # (Np+1) by N
-# B.draws <- round(apply(B.posterior,1:2,mean),4)  # N by N
-# B1.draws <- round(apply(B.posterior,1:2,mean),4) # N by (1+Np)
-# Sigma.draws <-round(apply(Sigma.posterior,1:2,mean),4)
-```
+### Extended Model 
 
 ```{r}
-# restrictions = c(-1,1) 
-# R1 <- diag(restrictions)
-# B0.draws      = array(NA,c(N,N,S))
-# B1.draws      = array(NA,c(N,(1+N*p),S))
-# i.vec = c()
-# 
-# pb = txtProgressBar(min = 0, max = S, initial = 0, style = 1) 
-# for (s in 1:S){
-#   setTxtProgressBar(pb,s)
-#   
-#   A             = A.posterior[,,s]
-#   Sigma         = Sigma.posterior[,,s]
-#   B0.tilde     = B.posterior[,,s]
-#   B1.tilde      = B1.tilde.s[,,s]
-#   i=1
-#   sign.restrictions.do.not.hold = TRUE 
-#   
-#   while (sign.restrictions.do.not.hold){
-#   X           = matrix(rnorm(N*N),N,N) # draw iid normal X 
-#   QR          = qr(X, tol = 1e-10)
-#   Q           = qr.Q(QR,complete=TRUE)
-#   R           = qr.R(QR,complete=TRUE)
-#   Q           = t(Q %*% diag(sign(diag(R))))
-#   B0          = Q%*%B0.tilde # N by N 
-#   B1          = Q%*%B1.tilde # 7 by 7 
-#   B0.inv      = solve(B0)
-#   check       = prod(R1 %*% B0.inv %*% diag(N)[,2] > 0)
-#   if (check==1){sign.restrictions.do.not.hold=FALSE}
-#   i=i+1
-#   }
-#   
-#   # print(i)
-#   i.vec = c(i.vec,i)
-#   B0.draws[,,s] = B0
-#   B1.draws[,,s] = B1
-# }
-# close(pb)
+nu.kappa <- 1
+S.kappa <- 1 
+
+prior.e <- GetPrior.parameters.g(N,p,Sigma.hat,nu.kappa,S.kappa,TRUE)
+
+A.prior <- prior.e$A.prior
+V.prior <- prior.e$V.prior
+S.prior <- prior.e$S.prior
+nu.prior <- prior.e$nu.prior
+kappa <- prior.e$kappa
 ```
 
 
+```{r}
+S1 = 1000
+S2 = 9000
+posterior.e <- DrawPosterior.e(N,p,Y,X,nu.prior,A.prior,V.prior,S.prior,nu.kappa,S.kappa,S1,S2)
+
+Sigma.posterior <- posterior.e$Sigma.posterior.e
+A.posterior <- posterior.e$A.posterior.e
+B1.tilde.s <- posterior.e$B1.tilde.s.e
+B.posterior <- posterior.e$B.posterior.e
+
+```
+
+```{r apply sign restriction-extended model}
+B.draws.restricted <- ImposeSignRestriction(restrictions, N,S2,p,A.posterior,Sigma.posterior,B.posterior,B1.tilde.s)
+
+B0.draws <- B.draws.restricted$B0.draws
+B1.draws <- B.draws.restricted$B1.draws
+```
+
+```{r check for extended model}
+A.check <- array(NA,c(N+1,N,S2))
+S.check <- array(NA,c(N,N,S2))
+for (s in 1:S2){
+  # convert Bo into Sigma 
+  S.check[,,s] <- B0.draws[,,s] %*% t(B0.draws[,,s])
+  A.check[,,s] <- t(B1.draws[,,s]) %*% B0.draws[,,s]
+}
+```
+
+@tbl-Acheck2
+```{r}
+#| label: tbl-Acheck2
+#| tbl-cap: Extended Model - A 
+d3 <- round(apply(A.check,1:2,mean),4)
+knitr::kable(d3, index=TRUE)
+```
+
+@tbl-Scheck2
+```{r}
+#| label: tbl-Scheck2
+#| tbl-cap: Extended Model - Sigma 
+d4 <- round(apply(S.check,1:2,mean),4)
+knitr::kable(d4, index=TRUE)
+```
+
+
+# Empirical Estimation 
+
+```{r set-up, get design matrices and MLE}
+# #| echo: true
+# #| message: false
+# #| warning: false
+# N       = 7      # number of variables 
+# p       = 4      # number of lags 
+# S       = 10000  # sample size 
+# h       = 8      # number of periods ahead of forecasting 
+# K       = p + 1 
+# 
+# df.len  = nrow(df.num)
+# Y       = ts(df.num[K:df.len,], start=c(1991,3), frequency=4)
+# X       = matrix(1,nrow(Y),1)
+# 
+# # X is the design matrix, containing 1s and lags of Y 
+# for (i in 1:p){
+#   X     = cbind(X,df.num[K:df.len-i,])
+# }
+# 
+# A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y                # (X'X)^(-1)X'Y
+# Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)    # lecture 7 slides 29 
+
+# restrictions = c(-1,-1,-1, 1, 1,-1,-1) 
+```
 
 # References {.unnumbered}
 
