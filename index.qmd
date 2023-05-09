@@ -350,7 +350,7 @@ p(A,\Sigma) = p(A|\Sigma) p(\Sigma) \\
 
 Parameters are as follows: 
 \begin{gather}
-\underline{A} = [0_{N \times 1}, I_N, 0_{N \times (p-1)N}]' \\ 
+\underline{A} = [0_{N \times 1} \quad I_N \quad 0_{N \times (p-1)N}]' \\ 
 \\ Var[vec(A)] = \Sigma \otimes  \underline{V} \\
 \\ \underline{V} = diag([\kappa_2 \quad \kappa_1 (p^{-2} \otimes I_N)]) \\
 \\ p = [1,2,...p]
