@@ -269,17 +269,17 @@ knitr::kable(adf.diff2, index=TRUE)
 ```
 
 ```{r reserve for real estimation}
-# # create a numeric df, which would benefit computing 
-# df.num <- cbind(
-#   as.numeric(df$GDP),
-#   as.numeric(df$Spending),
-#   as.numeric(df$Revenue),
-#   as.numeric(df$Debt),
-#   as.numeric(df$Inflation),
-#   as.numeric(df$Interest),
-#   as.numeric(df$Stock)
-# )
-# colnames(df.num) <- colnames(df)
+# create a numeric df, which would benefit computing
+df.num <- cbind(
+  as.numeric(df$GDP),
+  as.numeric(df$Spending),
+  as.numeric(df$Revenue),
+  as.numeric(df$Debt),
+  as.numeric(df$Inflation),
+  as.numeric(df$Interest),
+  as.numeric(df$Stock)
+)
+colnames(df.num) <- colnames(df)
 ```
 
 # Methodology
@@ -393,12 +393,14 @@ where we have posterior distribution parameters:
 From above derivation, we can compute functions to calculate parameters:
 
 ```{r}
-GetPrior.parameters <- function (N,p,Sigma.hat,nu.kappa,S.kappa) {
+GetPrior.parameters <- function (N,p,Sigma.hat) {
  
   kappa.1 <- 1 
   kappa.2 <- 100 
+  
+  K = 1 + N*p 
 
-  A.prior = matrix(0,(1+N*p),N)
+  A.prior = matrix(0,K,N)
   A.prior[2:(N+1),] = diag(N) 
   V.prior = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
   S.prior = diag(diag(Sigma.hat))
@@ -413,7 +415,12 @@ GetPrior.parameters <- function (N,p,Sigma.hat,nu.kappa,S.kappa) {
 
 ```{r}
 #| echo: true
-GetPosterior.parameters <- function (X,Y,A.prior,nu.prior,S.prior,V.prior) {
+GetPosterior.parameters <- function (X,Y,prior.parameters) {
+  
+  A.prior <- prior.parameters$A.prior
+  V.prior <- prior.parameters$V.prior
+  S.prior <- prior.parameters$S.prior
+  nu.prior <- prior.parameters$nu.prior
   
   V.bar.inv <- t(X)%*%X + diag(1/diag(V.prior))
   V.bar <- solve(V.bar.inv)
@@ -432,14 +439,22 @@ Then posterior distributions of $A$ and $\Sigma$ can be drawn:
 
 ```{r draw poesterior}
 #| echo: true
-DrawPosterior <- function (N,S,p,nu.bar,S.bar,A.bar,V.bar){
+DrawPosterior <- function (N,S,p,posterior.parameters){
+  
+  K = 1+N*p
+  
+  A.bar <- posterior.parameters$A.bar
+  V.bar <- posterior.parameters$V.bar
+  S.bar <- posterior.parameters$S.bar
+  nu.bar <- posterior.parameters$nu.bar
+  
   Sigma.posterior   = rWishart(S, df=nu.bar, Sigma=solve(S.bar))  
   Sigma.posterior   = apply(Sigma.posterior,3,solve)            
   Sigma.posterior   = array(Sigma.posterior,c(N,N,S))   
   A.posterior       = array(rnorm(prod(c(dim(A.bar),S))),c(dim(A.bar),S)) 
   B.posterior       = array(NA,c(N,N,S))
   L                 = t(chol(V.bar)) 
-  B1.tilde.s        = array(NA,c(N,(1+N*p),S))
+  B1.tilde.s        = array(NA,c(N,K,S))
   
   for (s in 1:S){
     cholSigma.s     = chol(Sigma.posterior[,,s])
@@ -463,7 +478,12 @@ The Algorithm from Fry, Pagan (2011) is implemented to transfer SF parameters $(
 
 ```{r}
 #| echo: true
-ImposeSignRestriction <- function (restrictions,N,S,p,A.posterior,Sigma.posterior,B.posterior,B1.tilde.s){
+ImposeSignRestriction <- function (restrictions,N,S,p,posterior.draws){
+  
+  A.posterior <- posterior.draws$A.posterior
+  Sigma.posterior <- posterior.draws$Sigma.posterior
+  B.posterior <- posterior.draws$B.posterior
+  B1.tilde.s <- posterior.draws$B1.tilde.s
   
   R1 <- diag(restrictions)
   B0.draws      = array(NA,c(N,N,S))
@@ -556,11 +576,17 @@ Discard the first $S_1$.
 
 ```{r}
 #| echo: true
-DrawPosterior.e <- function (Y,X,nu.prior,A.prior,V.prior,S.prior,nu.kappa,S.kappa,S1,S2){
+DrawPosterior.e <- function (Y,X,prior.parameters,nu.kappa,S.kappa,S1,S2){
   
   N = ncol(Y)
   K = ncol(X)
   T = nrow(Y)
+  
+  A.prior <- prior.parameters$A.prior
+  V.prior <- prior.parameters$V.prior
+  S.prior <- prior.parameters$S.prior
+  nu.prior <- prior.parameters$nu.prior
+  
   kappa           <- c()
   A.posterior     <- array(NA,c(K,N,(S1+S2)))
   Sigma.posterior <- array(NA,c(N,N,(S1+S2))) 
@@ -647,33 +673,19 @@ restrictions = c(-1,1)
 ### Basic Model
 
 ```{r generating prior parameters}
-prior.parameters <- GetPrior.parameters(N,p,Sigma.hat,nu.kappa,S.kappa)
-A.prior <- prior.parameters$A.prior
-V.prior <- prior.parameters$V.prior
-S.prior <- prior.parameters$S.prior
-nu.prior <- prior.parameters$nu.prior
+prior.parameters <- GetPrior.parameters(N,p,Sigma.hat)
 ```
 
 ```{r generating normal-inverse Wishard posterior parameters}
-poesterior.parameters.iw <- GetPosterior.parameters(X,Y,A.prior,nu.prior,S.prior,V.prior)
-
-A.bar <- poesterior.parameters.iw$A.bar
-V.bar <- poesterior.parameters.iw$V.bar
-S.bar <- poesterior.parameters.iw$S.bar
-nu.bar <- poesterior.parameters.iw$nu.bar
+poesterior.parameters <- GetPosterior.parameters(X,Y,prior.parameters)
 ```
 
 ```{r}
-posterior.draws <- DrawPosterior(N,S,p,nu.bar,S.bar,A.bar,V.bar)
-
-A.posterior <- posterior.draws$A.posterior
-B.posterior <- posterior.draws$B.posterior
-B1.tilde.s <- posterior.draws$B1.tilde.s
-Sigma.posterior <- posterior.draws$Sigma.posterior
+posterior.draws <- DrawPosterior(N,S,p,poesterior.parameters)
 ```
 
 ```{r apply sign restriction}
-B.draws.restricted <- ImposeSignRestriction(restrictions, N,S,p,A.posterior,Sigma.posterior,B.posterior,B1.tilde.s)
+B.draws.restricted <- ImposeSignRestriction(restrictions,N,S,p,posterior.draws)
 
 B0.draws <- B.draws.restricted$B0.draws
 B1.draws <- B.draws.restricted$B1.draws
@@ -711,27 +723,18 @@ Then we can use the same data to check whether the extension model is working.
 nu.kappa <- 1
 S.kappa <- 1 
 
-prior.e <- GetPrior.parameters(N,p,Sigma.hat,nu.kappa,S.kappa)
-
-A.prior <- prior.e$A.prior
-V.prior <- prior.e$V.prior
-S.prior <- prior.e$S.prior
-nu.prior <- prior.e$nu.prior
-kappa <- prior.e$kappa
+prior.parameters <- GetPrior.parameters(N,p,Sigma.hat)
 ```
 
 
 ```{r}
 S1 = 5000
 S2 = 45000
-posterior.e <-
-DrawPosterior.e(Y,X,nu.prior,A.prior,V.prior,S.prior,nu.kappa,S.kappa,S1,S2)
 
-Sigma.posterior <- posterior.e$Sigma.posterior.e
-A.posterior <- posterior.e$A.posterior.e
-B1.tilde.s <- posterior.e$B1.tilde.s.e
-B.posterior <- posterior.e$B.posterior.e
-kappa <- posterior.e$kappa.e
+posterior.draws <-
+DrawPosterior.e(Y,X,prior.parameters,nu.kappa,S.kappa,S1,S2)
+
+kappa <- posterior.draws$kappa.e
 ```
 
 
@@ -751,7 +754,7 @@ hist(kappa,
 ```
 
 ```{r apply sign restriction-extended model}
-B.draws.restricted <- ImposeSignRestriction(restrictions, N,S2,p,A.posterior,Sigma.posterior,B.posterior,B1.tilde.s)
+B.draws.restricted <- ImposeSignRestriction(restrictions, N,S2,p,posterior.draws)
 
 B0.draws <- B.draws.restricted$B0.draws
 B1.draws <- B.draws.restricted$B1.draws
