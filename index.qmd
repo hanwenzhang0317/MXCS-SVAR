@@ -387,7 +387,7 @@ where we have posterior distribution parameters:
 \bar{V} = (X^{'}X+ \underline{V}^{-1})^{-1} \\ 
 \\ \bar{A} = \bar{V}(X^{'}Y+\underline{V}^{-1} \underline{A}) \\ 
 \\ \bar{\nu} = T + \underline{\nu} \\ 
-\\ \bar{S} = \underline{S} + Y^{'}Y +  A^{'}\underline{V}^{-1}\underline{A} - \bar{A}^{'}\bar{V}^{-1}\bar{A}
+\\ \bar{S} = \underline{S} + Y^{'}Y +  \underline{A}^{'}\underline{V}^{-1}\underline{A} - \bar{A}^{'}\bar{V}^{-1}\bar{A}
 \end{gather}
 
 From above derivation, we can compute functions to calculate parameters:
