@@ -16,9 +16,9 @@ bibliography: references.bib
 
 This research project will investigate the effects on fiscal policy. How does tax cuts affect the economy? Will tax reductions boost stock market? These questions are crucial to the understanding of dynamic economics and the stimulus policy-making process, and are aimed to be answered in the background of Australian Economy in this project.
 
-Effects of tax shocks on output has been investigated heavily in the previous literature. For example, Mountford and Uhlig (2009) found an unanticipated deficit-financed tax cut could stimulate the economy as a fiscal policy, using sign restrictions. They also revealed that investment falls when tax increases and government spending increases as investigated by Blanchard and Perotti (2002). Romer and Romer (2007) suggested exogeneous tax changes could end with large difference.
+Effects of tax shocks on output has been investigated heavily in the previous literature. For example, @Mountford2009effects found an unanticipated deficit-financed tax cut could stimulate the economy as a fiscal policy, using sign restrictions. They also revealed that investment falls when tax increases and government spending increases as investigated by @Blanchard2002effects. @Romer2010effects suggested exogeneous tax changes could end with large difference.
 
-While fiscal policy shocks have evidence of playing a role in affecting output, the effects on stock prices is ambiguous. Afonso and Sousa (2011) illustrated government spending shocks have negative effect on stock prices, whereas expansionary tax shocks are related to increase of stock prices. However, Charziantoniou et al. (2013) argued there was no monetary policy indicators in Afonso and Sousa (2011), these authors suggested over 1991 to 2010, real and financial variables were not affected by government spending shocks significantly.
+While fiscal policy shocks have evidence of playing a role in affecting output, the effects on stock prices is ambiguous. @afonso2011effects illustrated government spending shocks have negative effect on stock prices, whereas expansionary tax shocks are related to increase of stock prices. However, @Chatziantoniou2013stock argued there was no monetary policy indicators in @afonso2011effects, these authors suggested over 1991 to 2010, real and financial variables were not affected by government spending shocks significantly. 
 
 Although there is an unignorable amount of literature regarding the effects of fiscal policy, among which a large proportion of data analysed is based on US economy. This paper aims to fill the lack of such literature about Australian economy.
 
@@ -129,7 +129,7 @@ for (i in 1:ncol(df.o)){
 
 While GDP and government expenditure depict upward trend, government revenue shows increasing trend with seasonal patterns. Public debt kept relatively flat before the Global Financial Crisis (GFC), and started to increase after. Interest rate has a downward trend while stock prices exhibiting significant drop during GFC.
 
-Variables are transformed into real per-capita terms and compute logarithms as in Mumtaz and Theodoridis (2020), except inflation and cash rate target. In this stage, only the sample including all variables ranging from 2001 Q2 to 2022 Q4 is considered in the following section. Plots are provided as @fig-line-plot.
+Variables are transformed into real per-capita terms and compute logarithms as in @Mumtaz2020stock, except inflation and cash rate target. In this stage, only the sample including all variables ranging from 2001 Q2 to 2022 Q4 is considered in the following section. Plots are provided as @fig-line-plot.
 
 ```{r wrangling data}
 # all in real per capita terms except inflation and interest 
@@ -475,7 +475,7 @@ DrawPosterior <- function (N,S,p,posterior.parameters){
 
 After the posterior draws, we apply sign restrictions to identify the model. For any set of sign restrictions, given a parameter point $B_{+},B_{0}$ that satisfies such restrictions, there always exists an orthogonal matrix Q, arbitrarily close to an identity such that $QB_{+},QB_{0}$ satisfy the sign restrictions.
 
-The Algorithm from Fry, Pagan (2011) is implemented to transfer SF parameters $(\tilde{B_+},\tilde{B_0})$ to parameters $(B_{+},B_{0})$ such the restrictions of interest holds.
+The Algorithm from @Fry2011effects is implemented to transfer SF parameters $(\tilde{B_+},\tilde{B_0})$ to parameters $(B_{+},B_{0})$ such the restrictions of interest holds.
 
 ```{r}
 #| echo: true
@@ -818,7 +818,7 @@ A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y
 Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)   
 ```
 
-Following Mountford and Uhlig (2009), the governemnt revenue shock is identified as a shock where govenemnt revenue rises for a year after the shock, in this project, I extended the time period to be one and a half year, i.e. six quarters. Similarly, govenment spending shock is identified as a shock where governemnt spending rises for six quarters after the shock.
+Following @Mountford2009effects, the governemnt revenue shock is identified as a shock where govenemnt revenue rises for a year after the shock, in this project, I extended the time period to be one and a half year, i.e. six quarters. Similarly, govenment spending shock is identified as a shock where governemnt spending rises for six quarters after the shock.
 
 ```{r}
 # gov.spending.shock = c(0,1,0,0,0,0,0)
@@ -838,10 +838,6 @@ B0.draws <- B.draws.restricted$B0.draws
 B1.draws <- B.draws.restricted$B1.draws
 ```
 
-```{r}
-# dim(posterior.draws$A.posterior)
-# dim(posterior.draws$Sigma.posterior)
-```
 
 ```{r}
 A.posterior = array(NA,c(K,N,S))
@@ -930,22 +926,6 @@ B1.draws <- B.draws.restricted$B1.draws
 ```
 
 ```{r}
-# hist(posterior.draws$kappa.e,
-#      main=expression(paste("Distribution of ",kappa, " draws")),
-#      freq=FALSE,
-#      xlab = expression(kappa),
-#      breaks = 1000,
-#      col = "turquoise4",
-#      lty = "blank")
-
-```
-
-```{r}
-# dim(posterior.draws$A.posterior)
-# dim(posterior.draws$Sigma.posterior)
-```
-
-```{r}
 S <- dim(posterior.draws$Sigma.posterior)[3]
 
 A.posterior = array(NA,c(K,N,S))
@@ -1012,17 +992,7 @@ for (n in 1:N){
 }
 ```
 
+We can see that neither the IRF of basic model nor the extended model exhibits a significant effect on variables of interest. 
 
 # References {.unnumbered}
 
-Afonso, A., R. M. Sousa (2011): What are the effects of Fiscal policy on asset markets? *Economic Modelling*, 28, 1871-1890.
-
-Blanchard O, Perotti R. (2002). An empirical characterization of the dynamic effects of changes in government spending and taxes on output. *Quarterly Journal of Economics*. 117(4): 1329--1368.
-
-Chatziantoniou, I., D. Duffy, G. Filis (2013): Stock market response to monetary and Fiscal policy shocks: Multi-country evidence, *Economic Modelling*, 30, 754-769.
-
-Mountford, A., H. Uhlig (2009): What are the effects of Fiscal policy shocks? *Journal of Applied Econometrics*, 24, 960-992.
-
-Mumtaz, H., Theodoridis, K. (2020). Fiscal policy shocks and stock prices in the United States, *European Economic Review*, Volume 129
-
-Romer, C.D. and Romer, D.H. (2007) The Macroeconomic Effects of Tax Changes: Estimates Based on a New Measure of Fiscal Shocks. *NBER Working Paper No. 13264, National Bureau of Economic Research, Cambridge.*

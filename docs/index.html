@@ -84,6 +84,25 @@ code span.st { color: #4070a0; } /* String */
 code span.va { color: #19177c; } /* Variable */
 code span.vs { color: #4070a0; } /* VerbatimString */
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
 </style>
 
 
@@ -204,8 +223,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <section id="motivation" class="level1">
 <h1>Motivation</h1>
 <p>This research project will investigate the effects on fiscal policy. How does tax cuts affect the economy? Will tax reductions boost stock market? These questions are crucial to the understanding of dynamic economics and the stimulus policy-making process, and are aimed to be answered in the background of Australian Economy in this project.</p>
-<p>Effects of tax shocks on output has been investigated heavily in the previous literature. For example, Mountford and Uhlig (2009) found an unanticipated deficit-financed tax cut could stimulate the economy as a fiscal policy, using sign restrictions. They also revealed that investment falls when tax increases and government spending increases as investigated by Blanchard and Perotti (2002). Romer and Romer (2007) suggested exogeneous tax changes could end with large difference.</p>
-<p>While fiscal policy shocks have evidence of playing a role in affecting output, the effects on stock prices is ambiguous. Afonso and Sousa (2011) illustrated government spending shocks have negative effect on stock prices, whereas expansionary tax shocks are related to increase of stock prices. However, Charziantoniou et al.&nbsp;(2013) argued there was no monetary policy indicators in Afonso and Sousa (2011), these authors suggested over 1991 to 2010, real and financial variables were not affected by government spending shocks significantly.</p>
+<p>Effects of tax shocks on output has been investigated heavily in the previous literature. For example, <span class="citation" data-cites="Mountford2009effects">Mountford and Uhlig (<a href="#ref-Mountford2009effects" role="doc-biblioref">2009</a>)</span> found an unanticipated deficit-financed tax cut could stimulate the economy as a fiscal policy, using sign restrictions. They also revealed that investment falls when tax increases and government spending increases as investigated by <span class="citation" data-cites="Blanchard2002effects">Blanchard and Perotti (<a href="#ref-Blanchard2002effects" role="doc-biblioref">2002</a>)</span>. <span class="citation" data-cites="Romer2010effects">Romer and Romer (<a href="#ref-Romer2010effects" role="doc-biblioref">2010</a>)</span> suggested exogeneous tax changes could end with large difference.</p>
+<p>While fiscal policy shocks have evidence of playing a role in affecting output, the effects on stock prices is ambiguous. <span class="citation" data-cites="afonso2011effects">Afonso and Sousa (<a href="#ref-afonso2011effects" role="doc-biblioref">2011</a>)</span> illustrated government spending shocks have negative effect on stock prices, whereas expansionary tax shocks are related to increase of stock prices. However, <span class="citation" data-cites="Chatziantoniou2013stock">Chatziantoniou and Filis (<a href="#ref-Chatziantoniou2013stock" role="doc-biblioref">2013</a>)</span> argued there was no monetary policy indicators in <span class="citation" data-cites="afonso2011effects">Afonso and Sousa (<a href="#ref-afonso2011effects" role="doc-biblioref">2011</a>)</span>, these authors suggested over 1991 to 2010, real and financial variables were not affected by government spending shocks significantly.</p>
 <p>Although there is an unignorable amount of literature regarding the effects of fiscal policy, among which a large proportion of data analysed is based on US economy. This paper aims to fill the lack of such literature about Australian economy.</p>
 </section>
 <section id="data" class="level1">
@@ -229,7 +248,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>While GDP and government expenditure depict upward trend, government revenue shows increasing trend with seasonal patterns. Public debt kept relatively flat before the Global Financial Crisis (GFC), and started to increase after. Interest rate has a downward trend while stock prices exhibiting significant drop during GFC.</p>
-<p>Variables are transformed into real per-capita terms and compute logarithms as in Mumtaz and Theodoridis (2020), except inflation and cash rate target. In this stage, only the sample including all variables ranging from 2001 Q2 to 2022 Q4 is considered in the following section. Plots are provided as <a href="#fig-line-plot">Figure&nbsp;2</a>.</p>
+<p>Variables are transformed into real per-capita terms and compute logarithms as in <span class="citation" data-cites="Mumtaz2020stock">Mumtaz and Theodoridis (<a href="#ref-Mumtaz2020stock" role="doc-biblioref">2020</a>)</span>, except inflation and cash rate target. In this stage, only the sample including all variables ranging from 2001 Q2 to 2022 Q4 is considered in the following section. Plots are provided as <a href="#fig-line-plot">Figure&nbsp;2</a>.</p>
 <div class="cell">
 
 </div>
@@ -656,7 +675,7 @@ p(A,\Sigma|Y,X) \propto det{(\Sigma)}^{-\frac{T+N+K+ \underline{\nu}
 <span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>After the posterior draws, we apply sign restrictions to identify the model. For any set of sign restrictions, given a parameter point <span class="math inline">\(B_{+},B_{0}\)</span> that satisfies such restrictions, there always exists an orthogonal matrix Q, arbitrarily close to an identity such that <span class="math inline">\(QB_{+},QB_{0}\)</span> satisfy the sign restrictions.</p>
-<p>The Algorithm from Fry, Pagan (2011) is implemented to transfer SF parameters <span class="math inline">\((\tilde{B_+},\tilde{B_0})\)</span> to parameters <span class="math inline">\((B_{+},B_{0})\)</span> such the restrictions of interest holds.</p>
+<p>The Algorithm from <span class="citation" data-cites="Fry2011effects">Fry and Pagan (<a href="#ref-Fry2011effects" role="doc-biblioref">2011</a>)</span> is implemented to transfer SF parameters <span class="math inline">\((\tilde{B_+},\tilde{B_0})\)</span> to parameters <span class="math inline">\((B_{+},B_{0})\)</span> such the restrictions of interest holds.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ImposeSignRestriction <span class="ot">&lt;-</span> <span class="cf">function</span> (restrictions,N,p,posterior.draws){</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  </span>
@@ -989,10 +1008,7 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 <div class="cell">
 
 </div>
-<p>Following Mountford and Uhlig (2009), the governemnt revenue shock is identified as a shock where govenemnt revenue rises for a year after the shock, in this project, I extended the time period to be one and a half year, i.e.&nbsp;six quarters. Similarly, govenment spending shock is identified as a shock where governemnt spending rises for six quarters after the shock.</p>
-<div class="cell">
-
-</div>
+<p>Following <span class="citation" data-cites="Mountford2009effects">Mountford and Uhlig (<a href="#ref-Mountford2009effects" role="doc-biblioref">2009</a>)</span>, the governemnt revenue shock is identified as a shock where govenemnt revenue rises for a year after the shock, in this project, I extended the time period to be one and a half year, i.e.&nbsp;six quarters. Similarly, govenment spending shock is identified as a shock where governemnt spending rises for six quarters after the shock.</p>
 <div class="cell">
 
 </div>
@@ -1019,12 +1035,6 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 <div class="cell">
 
 </div>
-<div class="cell">
-
-</div>
-<div class="cell">
-
-</div>
 <p><a href="#fig-IRF-extended">Figure&nbsp;9</a> presents the Impulse Response Function of the extended model.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -1036,20 +1046,38 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 </div>
 </div>
 </div>
+<p>We can see that neither the IRF of basic model nor the extended model exhibits a significant effect on variables of interest.</p>
 </section>
 <section id="references" class="level1 unnumbered">
-<h1 class="unnumbered">References</h1>
-<p>Afonso, A., R. M. Sousa (2011): What are the effects of Fiscal policy on asset markets? <em>Economic Modelling</em>, 28, 1871-1890.</p>
-<p>Blanchard O, Perotti R. (2002). An empirical characterization of the dynamic effects of changes in government spending and taxes on output. <em>Quarterly Journal of Economics</em>. 117(4): 1329–1368.</p>
-<p>Chatziantoniou, I., D. Duffy, G. Filis (2013): Stock market response to monetary and Fiscal policy shocks: Multi-country evidence, <em>Economic Modelling</em>, 30, 754-769.</p>
-<p>Mountford, A., H. Uhlig (2009): What are the effects of Fiscal policy shocks? <em>Journal of Applied Econometrics</em>, 24, 960-992.</p>
-<p>Mumtaz, H., Theodoridis, K. (2020). Fiscal policy shocks and stock prices in the United States, <em>European Economic Review</em>, Volume 129</p>
-<p>Romer, C.D. and Romer, D.H. (2007) The Macroeconomic Effects of Tax Changes: Estimates Based on a New Measure of Fiscal Shocks. <em>NBER Working Paper No.&nbsp;13264, National Bureau of Economic Research, Cambridge.</em></p>
+
+
 
 
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-afonso2011effects" class="csl-entry" role="doc-biblioentry">
+Afonso, Antonio, and Ricardo M Sousa. 2011. <span>“What Are the Effects of Fiscal Policy on Asset Markets?”</span> <em>Economic Modelling</em> 28 (4): 1871–90.
+</div>
+<div id="ref-Blanchard2002effects" class="csl-entry" role="doc-biblioentry">
+Blanchard, and Perotti. 2002. <span>“An Empirical Characterization of the Dynamic Effects of Changes in Government Spending and Taxes on Output.”</span> <em>Quarterly Journal of Economics</em> 117 (4): 1329–68.
+</div>
+<div id="ref-Chatziantoniou2013stock" class="csl-entry" role="doc-biblioentry">
+Chatziantoniou, Duffy, and Filis. 2013. <span>“Stock Market Response to Monetary and Fiscal Policy Shocks: Multi-Country Evidence.”</span> <em>Economic Modelling</em> 30 (C): 754–69.
+</div>
+<div id="ref-Fry2011effects" class="csl-entry" role="doc-biblioentry">
+Fry, and Pagan. 2011. <span>“Sign Restrictions in Structural Vector Autoregressions: A Critical Review.”</span> <em>Journal of Economic Literature</em> 49 (4): 938–60.
+</div>
+<div id="ref-Mountford2009effects" class="csl-entry" role="doc-biblioentry">
+Mountford, and Uhlig. 2009. <span>“What Are the Effects of Fiscal Policy Shocks?”</span> <em>Journal of Applied Econometrics</em> 26: 960–92.
+</div>
+<div id="ref-Mumtaz2020stock" class="csl-entry" role="doc-biblioentry">
+Mumtaz, and Theodoridis. 2020. <span>“Fiscal Policy Shocks and Stock Prices in the United States.”</span> <em>European Economic Review</em> 129: 960–92.
+</div>
+<div id="ref-Romer2010effects" class="csl-entry" role="doc-biblioentry">
+Romer, and Romer. 2010. <span>“The Macroeconomic Effects of Tax Changes: Estimates Based on a New Measure of Fiscal Shocks.”</span> <em>American Economic Review</em> 100: 763–801.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
