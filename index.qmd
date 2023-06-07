@@ -141,7 +141,7 @@ df.log <- as.data.frame(merge(log(gdp_real_pc),
 df.log <- na.omit(df.log)[8:139,] # truncate data from 1990 Q1 to 2022 Q4 
 colnames(df.log) <- c("GDP","Spending","Revenue","Debt","Inflation")
 df.log$Interest <- as.numeric(as.character(interest))
-df.log$Stock <- log(as.numeric(aord))
+df.log$Stock <- log(as.numeric(aord))[1:132]
 ```
 
 @tbl-irf provides statistics summary of all variables from 2001Q2 to 2022Q4.
@@ -758,7 +758,7 @@ hist(kappa,
      freq=FALSE,
      xlab = expression(kappa),
      breaks = 1000,
-     xlim = c(0,0.01),
+     xlim = c(0,0.015),
      col = "turquoise4",
      lty = "blank")
 ```
