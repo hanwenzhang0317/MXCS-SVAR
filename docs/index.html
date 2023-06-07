@@ -185,7 +185,10 @@ div.csl-indent {
   <li><a href="#extended-model-1" id="toc-extended-model-1" class="nav-link" data-scroll-target="#extended-model-1">Extended Model</a></li>
   </ul></li>
   </ul></li>
-  <li><a href="#empirical-estimation" id="toc-empirical-estimation" class="nav-link" data-scroll-target="#empirical-estimation">Empirical Estimation</a></li>
+  <li><a href="#empirical-estimation" id="toc-empirical-estimation" class="nav-link" data-scroll-target="#empirical-estimation">Empirical Estimation</a>
+  <ul class="collapse">
+  <li><a href="#government-spending-shock" id="toc-government-spending-shock" class="nav-link" data-scroll-target="#government-spending-shock">Government Spending Shock</a></li>
+  </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -304,10 +307,10 @@ div.csl-indent {
 <tr class="odd">
 <td style="text-align: left;">Inflation</td>
 <td style="text-align: right;">132</td>
-<td style="text-align: right;">0.650</td>
-<td style="text-align: right;">0.617</td>
-<td style="text-align: right;">-1.923</td>
-<td style="text-align: right;">3.704</td>
+<td style="text-align: right;">57.273</td>
+<td style="text-align: right;">58.806</td>
+<td style="text-align: right;">-220.000</td>
+<td style="text-align: right;">270.000</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Interest</td>
@@ -418,9 +421,9 @@ div.csl-indent {
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Inflation</td>
-<td style="text-align: right;">-3.123</td>
+<td style="text-align: right;">-1.829</td>
 <td style="text-align: right;">5</td>
-<td style="text-align: right;">0.109</td>
+<td style="text-align: right;">0.648</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Interest</td>
@@ -480,7 +483,7 @@ div.csl-indent {
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Inflation</td>
-<td style="text-align: right;">-6.211</td>
+<td style="text-align: right;">-5.720</td>
 <td style="text-align: right;">5</td>
 <td style="text-align: right;">0.010</td>
 </tr>
@@ -725,7 +728,7 @@ p(A,\Sigma|Y,X) \propto det{(\Sigma)}^{-\frac{T+N+K+ \underline{\nu}
 <section id="extended-model" class="level2">
 <h2 class="anchored" data-anchor-id="extended-model">Extended Model</h2>
 <p>In the extended model,instead of setting <span class="math inline">\(\kappa_1\)</span> and <span class="math inline">\(\kappa_2\)</span> as fixed values, the overall shrinkage level for auto-regressive slopes <span class="math inline">\(\kappa_1\)</span> is assumed to follow an inverse gamma 2 distribution <span class="math inline">\(IG2(\underline{S}_{\kappa},\underline{\nu}_{\kappa})\)</span>, and shrinkage of constant term <span class="math inline">\(\kappa_2\)</span> can be set as <span class="math inline">\(100 \times \kappa_1\)</span>.</p>
-<p>Under this setting, <span class="math display">\[\begin{gather}
+<p>Under this setting, we consider the following posterior distributions: <span class="math display">\[\begin{gather}
 p(\kappa|A,\Sigma,Y,X) \\
 \\ p(A,\Sigma|X,Y,\kappa)
 \end{gather}\]</span></p>
@@ -965,16 +968,16 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 <caption>Table&nbsp;7: Extended Model - A</caption>
 <tbody>
 <tr class="odd">
-<td style="text-align: right;">0.0240</td>
-<td style="text-align: right;">0.0573</td>
+<td style="text-align: right;">0.0249</td>
+<td style="text-align: right;">0.0585</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">0.9841</td>
 <td style="text-align: right;">0.0021</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">-0.0030</td>
-<td style="text-align: right;">1.0566</td>
+<td style="text-align: right;">-0.0031</td>
+<td style="text-align: right;">1.0567</td>
 </tr>
 </tbody>
 </table>
@@ -988,12 +991,12 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 <caption>Table&nbsp;8: Extended Model - Sigma</caption>
 <tbody>
 <tr class="odd">
-<td style="text-align: right;">1.0241</td>
-<td style="text-align: right;">0.0001</td>
+<td style="text-align: right;">1.0239</td>
+<td style="text-align: right;">0.0000</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">0.0001</td>
-<td style="text-align: right;">1.0230</td>
+<td style="text-align: right;">0.0000</td>
+<td style="text-align: right;">1.0233</td>
 </tr>
 </tbody>
 </table>
@@ -1005,10 +1008,12 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 </section>
 <section id="empirical-estimation" class="level1">
 <h1>Empirical Estimation</h1>
+<section id="government-spending-shock" class="level2">
+<h2 class="anchored" data-anchor-id="government-spending-shock">Government Spending Shock</h2>
 <div class="cell">
 
 </div>
-<p>Following <span class="citation" data-cites="Mountford2009effects">Mountford and Uhlig (<a href="#ref-Mountford2009effects" role="doc-biblioref">2009</a>)</span>, the governemnt revenue shock is identified as a shock where govenemnt revenue rises for a year after the shock, in this project, I extended the time period to be one and a half year, i.e.&nbsp;six quarters. Similarly, govenment spending shock is identified as a shock where governemnt spending rises for six quarters after the shock.</p>
+<p>Following <span class="citation" data-cites="Mountford2009effects">Mountford and Uhlig (<a href="#ref-Mountford2009effects" role="doc-biblioref">2009</a>)</span>, the governemnt revenue shock is identified as a shock where govenemnt revenue rises for a year after the shock. In this project, I am restricting only the current period, where the sign of government spending and debt are positive, with all others not restricted.</p>
 <div class="cell">
 
 </div>
@@ -1018,7 +1023,7 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 <div class="cell">
 
 </div>
-<p><a href="#fig-IRF-basic">Figure&nbsp;8</a> shows the Impulse Response Function of the basic model.</p>
+<p><a href="#fig-IRF-basic">Figure&nbsp;8</a> shows the Impulse Response Function of the basic model for 50,000 draws, from which we can’t observe any significant or meaningful effects on variables of interest.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-IRF-basic" class="quarto-figure quarto-figure-center anchored">
@@ -1035,7 +1040,7 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 <div class="cell">
 
 </div>
-<p><a href="#fig-IRF-extended">Figure&nbsp;9</a> presents the Impulse Response Function of the extended model.</p>
+<p><a href="#fig-IRF-extended">Figure&nbsp;9</a> presents the Impulse Response Function of the extended model, which suggest a slight decrease in GDP while government spending rise, decrease in inflation and Cash Rate Target and Stock Prices. Note that since the government revenue data is not seasonally adjusted, the density looks containing some seasonality.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-IRF-extended" class="quarto-figure quarto-figure-center anchored">
@@ -1046,7 +1051,7 @@ exp\left\{ -\frac{1}{2} \frac{\underline{S}_{\kappa}}{\kappa} \right\}  \times e
 </div>
 </div>
 </div>
-<p>We can see that neither the IRF of basic model nor the extended model exhibits a significant effect on variables of interest.</p>
+</section>
 </section>
 <section id="references" class="level1 unnumbered">
 

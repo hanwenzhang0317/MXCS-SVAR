@@ -66,7 +66,7 @@ gov_revenue_pc <- tmp.gov_revenue / pop / tmp.gdp.deflator
 # 1948-09-01 to 2022-12-01 --> 298 quarters 
 cpi <-  readabs::read_abs(series_id = "A2325846C") 
 tmp.cpi <- xts::xts(cpi$value, cpi$date) 
-inflation <- 100*diff(tmp.cpi)/tmp.cpi
+inflation <- 100*diff(tmp.cpi)
 
 # Cash Rate Target; monthly average
 # 1990-01-23 to 2023-03-31 
@@ -172,7 +172,7 @@ knitr::kable(s, digits = 3,index=TRUE)
 
 dates <- as.Date(rownames(df),format = "%Y-%m-%d")
 col <- c("#009999","#009999", "#009999", "#009999", "#9933CC", "#9933CC", "#009999")
-col <- c(RColorBrewer::brewer.pal(7, name = "Purples"))
+# col <- c(RColorBrewer::brewer.pal(7, name = "Purples"))
 names <- c("Real GDP per-capita","Government Spending","Government Revenue","Pubic Debt","Inflation","Cash Rate Target","Stock Price")
 
 par(mfrow=c(4,2), mar=c(2,2,2,2))
@@ -529,7 +529,7 @@ ImposeSignRestriction <- function (restrictions,N,p,posterior.draws){
 
 In the extended model,instead of setting $\kappa_1$ and $\kappa_2$ as fixed values, the overall shrinkage level for auto-regressive slopes $\kappa_1$ is assumed to follow an inverse gamma 2 distribution $IG2(\underline{S}_{\kappa},\underline{\nu}_{\kappa})$, and shrinkage of constant term $\kappa_2$ can be set as $100 \times \kappa_1$.
 
-Under this setting, 
+Under this setting, we consider the following posterior distributions:
 \begin{gather}
 p(\kappa|A,\Sigma,Y,X) \\ 
 \\ p(A,\Sigma|X,Y,\kappa) 
@@ -719,8 +719,8 @@ knitr::kable(d2, index=TRUE)
 Then we can use the same data to check whether the extension model is working.
 
 ```{r}
-nu.kappa <- 1
-S.kappa <- 0.01 
+nu.kappa <- 1*100
+S.kappa <- 0.01*100
 
 prior.parameters <- GetPrior.parameters(N,p,Sigma.hat)
 ```
@@ -797,6 +797,8 @@ knitr::kable(d4, index=TRUE)
 
 # Empirical Estimation
 
+## Government Spending Shock 
+
 ```{r}
 #| echo: false
 
@@ -808,7 +810,7 @@ X       = matrix(1,nrow(Y),1)
 N       = ncol(Y)      # number of variables
 S       = 5000         # sample size
 K       = N*p + 1
-h       = 24  
+h       = 8  
 
 for (i in 1:p){
   X     = cbind(X,df.num[((p+1):nrow(df.num))-i,])
@@ -818,15 +820,11 @@ A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y
 Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)   
 ```
 
-Following @Mountford2009effects, the governemnt revenue shock is identified as a shock where govenemnt revenue rises for a year after the shock, in this project, I extended the time period to be one and a half year, i.e. six quarters. Similarly, govenment spending shock is identified as a shock where governemnt spending rises for six quarters after the shock.
+Following @Mountford2009effects, the governemnt revenue shock is identified as a shock where govenemnt revenue rises for a year after the shock. In this project, I am restricting only the current period, where the sign of government spending and debt are positive, with all others not restricted.
 
 ```{r}
-# gov.spending.shock = c(0,1,0,0,0,0,0)
-# gov.revenue.shock = c(0,0,1,0,0,0,0)
 gov.spending.shock = c(0,1,0,1,0,0,0)
-# gov.revenue.shock = c(0,0,1,0,0,0,0)
 ```
-
 
 ```{r generating prior parameters}
 prior.parameters <- GetPrior.parameters(N,p,Sigma.hat)
@@ -837,7 +835,6 @@ B.draws.restricted <- ImposeSignRestriction(gov.spending.shock,N,p,posterior.dra
 B0.draws <- B.draws.restricted$B0.draws
 B1.draws <- B.draws.restricted$B1.draws
 ```
-
 
 ```{r}
 A.posterior = array(NA,c(K,N,S))
@@ -885,15 +882,17 @@ IRFs.k1.hdi    = apply(IRF.posterior.mps,1:2,hdi, credMass=0.68)
 hh             = 1:(h+1)
 ```
 
+@fig-IRF-basic shows the Impulse Response Function of the basic model for 50,000 draws, from which we can't observe any significant or meaningful effects on variables of interest.
 
-@fig-IRF-basic shows the Impulse Response Function of the basic model.
 ```{r}
 #| label: fig-IRF-basic 
 #| fig-cap: "Impulse Response Function-Basic Model"
+names <- c("Real GDP per-capita","Government Spending","Government Revenue","Pubic Debt","Inflation","Cash Rate Target","Stock Price")
+
 par(mfrow=c(4,2), mar=c(2,2,2,2),cex.axis=1, cex.lab=1)
 for (n in 1:N){
   ylims     = range(IRFs.k1[n,hh],IRFs.k1.hdi[,n,1:(h+1)],0)
-  plot(hh,IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", main=rownames(IRFs.k1)[n])
+  plot(hh,IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", main=names[n])
   if (n==5 | n==6){
     axis(1,c(1,6,11,16,21,26),c("0","5","10","15","20","25"))
   } else {
@@ -972,14 +971,17 @@ IRFs.k1.hdi    = apply(IRF.posterior.mps,1:2,hdi, credMass=0.68)
 hh             = 1:(h+1)
 
 ```
-@fig-IRF-extended presents the Impulse Response Function of the extended model. 
+
+@fig-IRF-extended presents the Impulse Response Function of the extended model, which suggest a slight decrease in GDP while government spending rise, decrease in inflation and Cash Rate Target and Stock Prices. Note that since the government revenue data is not seasonally adjusted, the density looks containing some seasonality.  
+
 ```{r}
 #| label: fig-IRF-extended  
 #| fig-cap: "Impulse Response Function-Extended model"
 par(mfrow=c(4,2), mar=c(2,2,2,2),cex.axis=1, cex.lab=1)
+
 for (n in 1:N){
   ylims     = range(IRFs.k1[n,hh],IRFs.k1.hdi[,n,1:(h+1)],0)
-  plot(hh,IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", main=rownames(IRFs.k1)[n])
+  plot(hh,IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", main=names[n])
   if (n==5 | n==6){
     axis(1,c(1,6,11,16,21,26),c("0","5","10","15","20","25"))
   } else {
@@ -992,7 +994,6 @@ for (n in 1:N){
 }
 ```
 
-We can see that neither the IRF of basic model nor the extended model exhibits a significant effect on variables of interest. 
 
 # References {.unnumbered}
 
