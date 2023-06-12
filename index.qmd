@@ -352,8 +352,8 @@ Parameters are as follows:
 \begin{gather}
 \underline{A} = [0_{N \times 1} \quad I_N \quad 0_{N \times (p-1)N}]' \\ 
 \\ Var[vec(A)] = \Sigma \otimes  \underline{V} \\
-\\ \underline{V} = diag([\kappa_2 \quad \kappa_1 (p^{-2} \otimes I_N)]) \\
-\\ p = [1,2,...p]
+\\ \underline{V} = diag([\kappa_2 \quad \kappa_1 (p^{-2} \otimes \imath_N)]) \\
+\\ p = [1,2,...p], \qquad \imath_N = [1,...,1]
 \end{gather}
 
 The full conditional posterior is: 
