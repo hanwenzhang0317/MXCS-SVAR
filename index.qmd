@@ -12,20 +12,26 @@ bibliography: references.bib
 >
 > **Keywords.** fiscal policy shock, SVAR, tax shocks, stock price, impulse response function
 
-# Motivation
+# Introduction 
 
-This research project will investigate the effects on fiscal policy. How does tax cuts affect the economy? Will tax reductions boost stock market? These questions are crucial to the understanding of dynamic economics and the stimulus policy-making process, and are aimed to be answered in the background of Australian Economy in this project.
+This research project will investigate the effects of fiscal policy. How does tax cuts affect the economy? Will tax reductions boost stock market? These questions are crucial to the understanding of dynamic economics and the stimulus policy-making process, and are aimed to be answered in the background of Australian Economy in this project.
 
 Effects of tax shocks on output has been investigated heavily in the previous literature. For example, @Mountford2009effects found an unanticipated deficit-financed tax cut could stimulate the economy as a fiscal policy, using sign restrictions. They also revealed that investment falls when tax increases and government spending increases as investigated by @Blanchard2002effects. @Romer2010effects suggested exogeneous tax changes could end with large difference.
 
 While fiscal policy shocks have evidence of playing a role in affecting output, the effects on stock prices is ambiguous. @afonso2011effects illustrated government spending shocks have negative effect on stock prices, whereas expansionary tax shocks are related to increase of stock prices. However, @Chatziantoniou2013stock argued there was no monetary policy indicators in @afonso2011effects, these authors suggested over 1991 to 2010, real and financial variables were not affected by government spending shocks significantly. 
 
-Although there is an unignorable amount of literature regarding the effects of fiscal policy, among which a large proportion of data analysed is based on US economy. This paper aims to fill the lack of such literature about Australian economy.
+Although there is an unignorable amount of literature regarding the effects of fiscal policy, among which a large proportion of data analysed  is based on US economy. This paper aims to fill the lack of such literature about Australian economy.
+
+```{r}
+# Set up Global Variables
+N_SAMPLE    <-  50000
+N_S1        <-  5000
+N_S2        <-  45000 
+```
 
 # Data
 
 ```{r collecting data of interest}
-#| echo: false
 #| message: false
 #| warning: false
 
@@ -55,18 +61,26 @@ gdp_real_pc <- na.omit(tmp.gdp_no_pc/tmp.gdp.deflator) # 1973-09-01 to 2022-12-0
 gov_spend <- readabs::read_abs(series_id = "A2304036K") 
 tmp.gov_spend  <- xts::xts(gov_spend$value, gov_spend$date) 
 gov_spend_pc <- tmp.gov_spend/pop/tmp.gdp.deflator
-  
+
+# -----------------------------------------------------------------------
 # quarterly, original, total factor income, unit: $M
 # 1959-09-01 to 2022-12-01 --> 254 quarters 
-gov_revenue <- readabs::read_abs(series_id = "A2302411R") 
-tmp.gov_revenue <- xts::xts(gov_revenue$value, gov_revenue$date) 
-gov_revenue_pc <- tmp.gov_revenue / pop / tmp.gdp.deflator
+# gov_revenue <- readabs::read_abs(series_id = "A2302411R")
+# tmp.gov_revenue <- xts::xts(gov_revenue$value, gov_revenue$date)
+# gov_revenue_pc <- tmp.gov_revenue / pop / tmp.gdp.deflator
+# ----------------------------------------------------------------------
+
+# quarterly, seasonally adjusted, total taxes, unit: $M A2302794K
+# 1959-09-01 to 2022-12-01 --> 254 quarters 
+total_taxes <- readabs::read_abs(series_id = "A2302794K")
+tmp.total_taxes <- xts::xts(total_taxes$value, total_taxes$date)
+total_taxes_pc <- tmp.total_taxes / pop / tmp.gdp.deflator
 
 # original CPI
 # 1948-09-01 to 2022-12-01 --> 298 quarters 
 cpi <-  readabs::read_abs(series_id = "A2325846C") 
 tmp.cpi <- xts::xts(cpi$value, cpi$date) 
-inflation <- 100*diff(tmp.cpi)
+inflation <- 100*diff(log(tmp.cpi))
 
 # Cash Rate Target; monthly average
 # 1990-01-23 to 2023-03-31 
@@ -91,16 +105,16 @@ aord <- as.numeric(aord_q) / tmp.gdp.deflator[123:length(tmp.gdp.deflator)]
 
 ```
 
-The variables that are of interest include GDP, total government expenditure, total government revenue, cash rate target, inflation, public debt and stock prices. Those economic variables were collected from Reserve Bank of Australia (RBA) and Australian Bureau of Statistics (ABS), spanning quarterly from 1990 Q1 to 2022 Q4, including 132 observations.
+The variables that are of interest include GDP, total government expenditure, total taxes, cash rate target, inflation, public debt and stock prices. Those economic variables were collected from Reserve Bank of Australia (RBA) and Australian Bureau of Statistics (ABS), spanning quarterly from 1990 Q1 to 2022 Q4, including 132 observations.
 
-Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studied into detail in the future research. Inflation and cash rate target are also introduced in the model as controls. Original data are plotted in: @fig-plot.
+Stock prices are data of All Ordinaries, which is the benchmark of Australian market with relative long history, separate financial sectors might be studied into detail in the future research. Inflation and cash rate target are also introduced in the model as controls. Original data are plotted in @fig-plot.
 
 ```{r in normial terms}
 # all in real per capita terms except inflation and interest 
 df.o <- as.data.frame(
   merge(tmp.gdp_no, # Nominal GDP $M
             tmp.gov_spend, # Government Spending $M
-            tmp.gov_revenue, # Government Revenue $M
+            tmp.total_taxes, # Total taxation $M
             tmp.debt, # Pubic Debt $M
             inflation)) # Inflation (%)
 df.o <- na.omit(df.o)[8:139,] # truncate data from 1990 Q1 to 2022 Q4 
@@ -114,14 +128,15 @@ df.o$Stock <- as.numeric(aord_q)
 #| fig-cap: "Time Series Plots (in nominal prices)"
 
 dates <- as.Date(rownames(df.o),format = "%Y-%m-%d")
-names <- c("Nominal GDP $M","Government Spending $M","Government Revenue $M","Pubic Debt $M","Inflation (%)","Cash Rate Target (%)","Stock Price $")
-col <- c("#009999","#009999", "#009999", "#009999", "#9933CC", "#9933CC", "maroon")
+var.names <- c("Nominal GDP $M","Government Spending $M","Total Taxes $M","Pubic Debt $M","Inflation (%)","Cash Rate Target (%)","Stock Prices $")
+# col <- c("#009999","#009999", "#009999", "#009999", "#9933CC", "#9933CC", "maroon")
+col <- c(RColorBrewer::brewer.pal(9, name = "Purples"))
 
 par(mfrow=c(4,2), mar=c(2,2,2,2))
 for (i in 1:ncol(df.o)){
   plot(dates, y = df.o[,i], type = "l", 
-       main = paste(names[i]), ylab = "", xlab = "",
-       col = col[i], lwd = 2.5,
+       main = paste(var.names[i]), ylab = "", xlab = "",
+       col = col[i+2], lwd = 2.5,
        ylim = c(min(na.omit(df.o[,i])),max(na.omit(df.o[,i]))))
 }
 
@@ -135,11 +150,11 @@ Variables are transformed into real per-capita terms and compute logarithms as i
 # all in real per capita terms except inflation and interest 
 df.log <- as.data.frame(merge(log(gdp_real_pc),
             log(gov_spend_pc),
-            log(gov_revenue_pc),
+            log(total_taxes_pc),
             log(debt.pc),
             inflation))
 df.log <- na.omit(df.log)[8:139,] # truncate data from 1990 Q1 to 2022 Q4 
-colnames(df.log) <- c("GDP","Spending","Revenue","Debt","Inflation")
+colnames(df.log) <- c("GDP","Spending","Taxation","Debt","Inflation")
 df.log$Interest <- as.numeric(as.character(interest))
 df.log$Stock <- log(as.numeric(aord))[1:132]
 ```
@@ -168,18 +183,19 @@ knitr::kable(s, digits = 3,index=TRUE)
 
 ```{r data visualization}
 #| label: fig-line-plot
-#| fig-cap: "Time Series Plots (green lines are log transformation)"
+#| fig-cap: "Time Series Plots"
 
 dates <- as.Date(rownames(df),format = "%Y-%m-%d")
-col <- c("#009999","#009999", "#009999", "#009999", "#9933CC", "#9933CC", "#009999")
-# col <- c(RColorBrewer::brewer.pal(7, name = "Purples"))
-names <- c("Real GDP per-capita","Government Spending","Government Revenue","Pubic Debt","Inflation","Cash Rate Target","Stock Price")
+
+col <- c(RColorBrewer::brewer.pal(9, name = "Purples"))
+
+var.names <- c("GDP $M","Government Spending $M","Total Taxes $M","Pubic Debt $M","Inflation (%)","Cash Rate Target (%)","Stock Prices $")
 
 par(mfrow=c(4,2), mar=c(2,2,2,2))
 for (i in 1:ncol(df)){
   plot(dates, y = df[,i], type = "l", 
-       main = paste(names [i]), ylab = "", xlab = "",
-       col = col[i], lwd = 2.5,
+       main = paste(var.names[i]), ylab = "", xlab = "",
+       col = col[i+2], lwd = 2.5,
        ylim = c(min(na.omit(df[,i])),max(na.omit(df[,i]))))
 }
 
@@ -187,7 +203,7 @@ for (i in 1:ncol(df)){
 
 # Preliminary Results
 
-ACF Plots as in @fig-acf-plot show non-zero autocorrelations for at least 15 lags of variables except Inflation. PACF Plots as @fig-pacf-plot indicate significant and strong memory at the first lag of variables except Inflation, of, for which the first lag is also statistically significant but not strong.
+ACF Plots as in @fig-acf-plot show non-zero autocorrelations for at least 15 lags of  variables except Inflation. PACF Plots as @fig-pacf-plot indicate significant and strong memory at the first lag of variables except Inflation, for which the first lag is also statistically significant but not strong.
 
 ```{r data properties: ACF}
 #| label: fig-acf-plot
@@ -195,7 +211,7 @@ ACF Plots as in @fig-acf-plot show non-zero autocorrelations for at least 15 lag
 par(mfrow=c(4,2), mar=c(2,2,2,2))
 for (j in 1:length(colnames(df))){
   acf(na.omit(df[,j]),main="")
-  title(main = paste(names[j]), line = 1)
+  title(main = paste(var.names[j]), line = 1)
 }
 ```
 
@@ -205,11 +221,11 @@ for (j in 1:length(colnames(df))){
 par(mfrow=c(4,2), mar=c(2,2,2,2))
 for (j in 1:length(colnames(df))){
   pacf(na.omit(df[,j]),main="")
-  title(main = paste(names[j]), line = 1)
+  title(main = paste(var.names[j]), line = 1)
 }
 ```
 
-Augmented Dickey-Fuller Test can be performed to test for stationarity under the null hypothesis of unit-root non-stationary, the results are shown as @tbl-adf, from which we do not reject the null and conclude that all variables are unit-root non-stationary.
+Augmented Dickey-Fuller Test can be performed to test for stationarity under the null hypothesis of unit-root non-stationary, the results are shown as @tbl-adf, from which we do not reject the null and conclude that all variables except for cash rate target are unit-root non-stationary.
 
 ```{r test for stationarity}
 #| echo: true 
@@ -224,7 +240,7 @@ rownames(adf) <- colnames(df)
 colnames(adf) <- c("Dickey-Fuller","Lag order", "p-value")
 
 for (i in 1: ncol(df)){
-  adf_tmp                 <- adf.test(df[,i])
+  adf_tmp                 <-  adf.test(df[,i])
   adf[i,"Dickey-Fuller"]  <-  round(as.numeric(adf_tmp[1]),3)
   adf[i,"Lag order"]      <-  as.numeric(adf_tmp[2])
   adf[i,"p-value"]        <-  round(as.numeric(adf_tmp[4]),3)
@@ -233,7 +249,7 @@ for (i in 1: ncol(df)){
 knitr::kable(adf, index=TRUE)
 ```
 
-Take the first difference and run the Augmented Dickey-Fuller Test again, it is sensible to conclude that variables except public debt and interest rate are integrated of order 1 as in @tbl-adf-diff. Public debt is integrated with order 2, since its second-order difference is stationary as @tbl-adf-diff2.
+Take the first difference and run the Augmented Dickey-Fuller Test again, it is sensible to conclude that variables except public debt and cash rate target are integrated of order 1 as in @tbl-adf-diff. Public debt is integrated with order 2, since its second-order difference is stationary as @tbl-adf-diff2.
 
 ```{r}
 #| message: false
@@ -274,7 +290,7 @@ knitr::kable(adf.diff2, index=TRUE)
 df.num <- cbind(
   as.numeric(df$GDP),
   as.numeric(df$Spending),
-  as.numeric(df$Revenue),
+  as.numeric(df$Taxation),
   as.numeric(df$Debt),
   as.numeric(df$Inflation),
   as.numeric(df$Interest),
@@ -297,13 +313,13 @@ u_t|Y_{t-1}\sim iid(0_N,I_N)
 
 $Y_t$ is $N\times1$ matrix of endogenous variables,N represents the number of endogeneous variables and p is the number of lags. $B_0$ is $N\times N$ matrix capturing contemporaneous relationships between variables, and $u_t$ is $N\times1$ vector conditionally on $Y_{t-1}$ orthogonal structural shocks.
 
-In particular, in this model, $Y_t$ contains seven variables ordered as : (1) real per-capita GDP $GDP_t$, (2) real per-capita government expenditure $Expenditure_t$, (3) real per-capita government revenue $Revenue_t$, (4) real per-capita public debt $Debt_t$, (5) inflation $Inflation_t$, (6) cash rate target $Interest_t$, (7) real stock price $Stock_t$.
+In particular, in this model, $Y_t$ contains seven variables ordered as : (1) real per-capita GDP $GDP_t$, (2) real per-capita government expenditure $Expenditure_t$, (3) real per-capita total taxes $Taxation_t$, (4) real per-capita public debt $Debt_t$, (5) inflation $Inflation_t$, (6) cash rate target $Interest_t$, (7) real stock price $Stock_t$.
 
 \begin{align}
 Y_t=\begin{pmatrix} 
 \\ GDP_t
 \\ Expenditure_t
-\\ Revenue_t 
+\\ Taxation_t 
 \\ Debt_t
 \\ Inflation_t 
 \\ Interest_t 
@@ -326,17 +342,59 @@ The covariance matrix of $\epsilon_t$ can be written as: \begin{align}
 
 # Estimation Framework
 
-## Basic Model
+1000 observations of bi-variate Gaussian random walk processes with the covariance matrix equal to the identity matrix of order 2 are generated as @fig-actificial-data to test whether the modeling frameworks are able to estimate true parameters of the data generating process.
+
+```{r generate bi-variate Gaussian random walk process}
+#| echo: true
+#| label: fig-actificial-data
+#| fig-cap: "Bi-variate Gaussian random walk"
+par(mfrow=c(2,2))
+set.seed(2023)
+RW1 <- arima.sim(model= list(order = c(0, 1, 0)), n=1000, mean=0, sd=1)
+plot.ts(RW1,main="Random Walk 1", col=4,xlab="")
+plot.ts(diff(RW1),main="First difference of Random Walk 1", col=4,xlab="")
+
+RW2 <- arima.sim(model= list(order = c(0, 1, 0)), n=1000, mean=0, sd=1)
+plot.ts(RW2,main="Random Walk 2", col=4,xlab="")
+plot.ts(diff(RW2),main="First difference of Random Walk 2", col=4,xlab="")
+
+RW  <- cbind(RW1,RW2)
+```
+
+
+```{r artificial data model setting}
+#| echo: true
+Y            = RW[2:nrow(RW),]
+X            = matrix(1,nrow(Y),1)
+X            = cbind(X,RW[2: nrow(RW)-1,])
+
+N            = ncol(Y)      # number of variables
+p            = 1            # number of lags
+S            = N_SAMPLE     # sample size
+K            = N*p + 1
+
+A.hat        = solve(t(X)%*%X)%*%t(X)%*%Y                
+Sigma.hat    = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)   
+
+restrictions = c(0,1)
+```
+
+## Baseline Model
 
 Rewrite the reduced form equation in matrix: 
 
 \begin{gather}
 Y = XA + E \\
 \\ E|X \sim MN_{T \times N}(0_{T \times N},\Sigma,I_T) 
-\end{gather} The Likelihood function would be: \begin{gather}
+\end{gather} 
+
+The Likelihood function would be: 
+\begin{gather}
 L(A,\Sigma|Y,X) \propto det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(Y-XA)'(Y-XA) \right] \right\} \\
 \\ \propto det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(A-\hat{A})'X'X(A-\hat{A}) \right] \right\} exp \left\{-\frac{1}{2} tr \left[\Sigma^{-1}(Y-X \hat{A})'(Y-X \hat{A}) \right] \right\} \\
-\end{gather} From Maximum Likelihood Estimation, \begin{gather}
+\end{gather} 
+
+From Maximum Likelihood Estimation, \begin{gather}
 \hat{A} = (X'X)^{-1}X'Y \\
 \\ \hat{\Sigma} = \frac{1}{T} (Y-X \hat{A})'(Y-X \hat{A})
 \end{gather}
@@ -352,7 +410,7 @@ Parameters are as follows:
 \begin{gather}
 \underline{A} = [0_{N \times 1} \quad I_N \quad 0_{N \times (p-1)N}]' \\ 
 \\ Var[vec(A)] = \Sigma \otimes  \underline{V} \\
-\\ \underline{V} = diag([\kappa_2 \quad \kappa_1 (p^{-2} \otimes \imath_N)]) \\
+\\ \underline{V} = \text{diag}([\kappa_2 \quad \kappa_1 (p^{-2} \otimes \imath_N)]) \\
 \\ p = [1,2,...p], \qquad \imath_N = [1,...,1]
 \end{gather}
 
@@ -443,31 +501,31 @@ DrawPosterior <- function (N,S,p,posterior.parameters){
   
   K = 1+N*p
   
-  A.bar <- posterior.parameters$A.bar
-  V.bar <- posterior.parameters$V.bar
-  S.bar <- posterior.parameters$S.bar
+  A.bar  <- posterior.parameters$A.bar
+  V.bar  <- posterior.parameters$V.bar
+  S.bar  <- posterior.parameters$S.bar
   nu.bar <- posterior.parameters$nu.bar
   
-  Sigma.posterior   = rWishart(S, df=nu.bar, Sigma=solve(S.bar))  
-  Sigma.posterior   = apply(Sigma.posterior,3,solve)            
-  Sigma.posterior   = array(Sigma.posterior,c(N,N,S))   
-  A.posterior       = array(rnorm(prod(c(dim(A.bar),S))),c(dim(A.bar),S)) 
-  B.posterior       = array(NA,c(N,N,S))
+  Sigma.posterior   <- rWishart(S, df=nu.bar, Sigma=solve(S.bar))  
+  Sigma.posterior   <- apply(Sigma.posterior,3,solve)            
+  Sigma.posterior   <- array(Sigma.posterior,c(N,N,S))   
+  A.posterior       <- array(rnorm(prod(c(dim(A.bar),S))),c(dim(A.bar),S)) 
+  B.posterior       <- array(NA,c(N,N,S))
   
-  L                 = t(chol(V.bar)) 
-  B1.tilde.s        = array(NA,c(N,K,S))
+  L                 <- t(chol(V.bar)) 
+  B1.tilde.s        <- array(NA,c(N,K,S))
   
   for (s in 1:S){
-    cholSigma.s     = chol(Sigma.posterior[,,s])
+    cholSigma.s      <- chol(Sigma.posterior[,,s])
     # B.posterior[,,s]= t(cholSigma.s)
-    B.posterior[,,s]= solve(t(cholSigma.s)) 
-    A.posterior[,,s]= A.bar + L%*%A.posterior[,,s]%*%cholSigma.s 
-    B1.tilde.s[,,s] = B.posterior[,,s]%*%t(A.posterior[,,s])
+    B.posterior[,,s] <- solve(t(cholSigma.s)) 
+    A.posterior[,,s] <- A.bar + L%*%A.posterior[,,s]%*%cholSigma.s 
+    B1.tilde.s[,,s]  <- B.posterior[,,s]%*%t(A.posterior[,,s])
   }
 
-  return(list(A.posterior = A.posterior,
-              B.posterior = B.posterior,
-              B1.tilde.s = B1.tilde.s,
+  return(list(A.posterior     = A.posterior,
+              B.posterior     = B.posterior,
+              B1.tilde.s      = B1.tilde.s,
               Sigma.posterior = Sigma.posterior)
          )
 }
@@ -502,19 +560,19 @@ ImposeSignRestriction <- function (restrictions,N,p,posterior.draws){
     i=1
     sign.restrictions.do.not.hold = TRUE 
     while (sign.restrictions.do.not.hold){
-    X           = matrix(rnorm(N*N),N,N)          # draw iid normal X 
+    X           = matrix(rnorm(N*N),N,N)         
     QR          = qr(X, tol = 1e-10)
     Q           = qr.Q(QR,complete=TRUE)
     R           = qr.R(QR,complete=TRUE)
     Q           = t(Q %*% diag(sign(diag(R))))
-    B0          = Q%*%B0.tilde                    # N by N 
-    B1          = Q%*%B1.tilde                    # N by N
+    B0          = Q%*%B0.tilde                    
+    B1          = Q%*%B1.tilde                   
     B0.inv      = solve(B0)      
     check       = prod(R1 %*% B0.inv %*% diag(N)[,2] >= 0)
-    if (check==1){sign.restrictions.do.not.hold=FALSE}
+    if (check){sign.restrictions.do.not.hold=FALSE}
     i=i+1 
     }
-    i.vec = c(i.vec,i) # max 10000 ...
+    i.vec = c(i.vec,i) 
     B0.draws[,,s] = B0
     B1.draws[,,s] = B1
   }
@@ -525,9 +583,290 @@ ImposeSignRestriction <- function (restrictions,N,p,posterior.draws){
 
 ```
 
-## Extended Model
+```{r }
+prior.parameters <- GetPrior.parameters(N,p,Sigma.hat)
+poesterior.parameters <- GetPosterior.parameters(X,Y,prior.parameters)
+posterior.draws <- DrawPosterior(N,S,p,poesterior.parameters)
 
-In the extended model,instead of setting $\kappa_1$ and $\kappa_2$ as fixed values, the overall shrinkage level for auto-regressive slopes $\kappa_1$ is assumed to follow an inverse gamma 2 distribution $IG2(\underline{S}_{\kappa},\underline{\nu}_{\kappa})$, and shrinkage of constant term $\kappa_2$ can be set as $100 \times \kappa_1$.
+B.draws.restricted <- ImposeSignRestriction(restrictions,N,p,posterior.draws)
+
+B0.draws <- B.draws.restricted$B0.draws
+B1.draws <- B.draws.restricted$B1.draws
+```
+
+```{r check for basic model}
+A.check <- array(NA,c(N+1,N,S))
+S.check <- array(NA,c(N,N,S))
+for (s in 1:S){
+  # convert B0 into Sigma 
+  S.check[,,s] <- B0.draws[,,s] %*% t(B0.draws[,,s])
+  A.check[,,s] <- t(B1.draws[,,s]) %*% B0.draws[,,s]
+}
+```
+
+@tbl-Acheck and @tbl-Scheck show the matrix of $A$ and $\Sigma$, suggesting the basic model estimation using artificial data of 1 lag and constant term is showing zero posterior mean of the autoregressive and covariance matrices are close to an identity matrix and the posterior mean of the constant term is close to zeros too.
+
+```{r}
+#| label: tbl-Acheck
+#| tbl-cap: Basic Model - A
+d1 <- round(apply(A.check,1:2,mean),4)
+knitr::kable(d1, index=TRUE)
+```
+
+```{r}
+#| label: tbl-Scheck
+#| tbl-cap: Basic Model - Sigma 
+d2 <- round(apply(S.check,1:2,mean),4)
+knitr::kable(d2, index=TRUE)
+```
+
+## Stochastic Volatility Heteroskedasticity 
+
+Considering potential existence of heteroskedasticity in the variables I used, Stochastic Volatility (SV) models can be estimated, for which the specification would be: 
+\begin{gather}
+Y = XA + E \\
+\\ E|X \sim MN_{T \times N}(0_{T \times N},\Sigma,\text{diag}(\sigma^2)) 
+\end{gather} 
+where $\sigma^2=(\sigma^2_1,...,\sigma^2_T)^{'}$, which follows a Stochastic Volatility process. 
+
+Then we have the likelihood function as: 
+\begin{gather}
+L(A,\Sigma|Y,X,\sigma^2) \propto det(\text{diag}(\sigma^2))^{-\frac{N}{2}} det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(Y-XA)'\text{diag}(\sigma^2)^{-1}(Y-XA) \right] \right\} \\
+\end{gather} 
+
+The **full conditional posterior** of $(A,\Sigma)$ would follow a $MNIW(\bar{A},\bar{V},\bar{S},\bar{\nu})$ distribution. 
+\begin{gather}
+p(A,\Sigma|X,Y,\sigma^2) \propto L(A,\Sigma|Y,X,\sigma^2) \times  p(A|\Sigma,\sigma^2) \times p(\Sigma) 
+\end{gather}
+with parameters: 
+\begin{gather}
+\bar{V} = (X'\text{diag}(\sigma^2)^{-1}X+\underline{V}^{-1})^{-1} \\ 
+\\ \bar{A} = \bar{V}(X'\text{diag}(\sigma^2)^{-1}Y+\underline{V}^{-1}\underline{A}) \\ 
+\\ \bar{S} = \underline{S} + Y'\text{diag}(\sigma^2)^{-1}Y + \underline{A}^{'}\underline{V}^{-1}\underline{A} - \bar{A}^{'}\bar{V}^{-1}\bar{A} \\ 
+\\ \bar{\nu}= T + \underline{\nu}
+\end{gather}
+
+**Gibbs Sampler** can be conducted to get the posterior draws of the extended model, for which we can,
+
+Initialize $\sigma^2$ at ${\sigma^2}^{(0)}$.
+
+At each iteration s:
+
+1.  Draw $(A,\Sigma)^{(s)} \sim p(A,\Sigma| X,Y,{\sigma^2}^{(s-1)})$
+2.  Draw ${\sigma^2}^{(s)} \sim p(\sigma^2|Y,X,A^{(s)},\Sigma^{(s)})$
+
+Repeat 1 and 2 for $(S_1 + S_2)$ times.
+
+Discard the first $S_1$.
+
+Step 2 is conducted based on the following chunk of code: 
+```{r}
+#| echo: true
+SVcommon.Gibbs.iteration <- function(aux, priors){
+  # A single iteration of the Gibbs sampler for the SV component
+
+  # aux is a list containing:
+  #   Y         - a TxN matrix
+  #   X         - a TxK matrix
+  #   H         - a Tx1 matrix                 
+  #   h0        - a scalar
+  #   sigma.v2  - a scalar
+  #   s         - a Tx1 matrix
+  #   A         - a KxN matrix
+  #   Sigma     - an NxN matrix
+  #   sigma2    - a Tx1 matrix
+  
+  # priors is a list containing:
+  #   h0.v      - a positive scalar
+  #   h0.m      - a scalar
+  #   sigmav.s  - a positive scalar
+  #   sigmav.nu - a positive scalar
+  #   HH        - a TxT matrix
+
+  T             = dim(aux$Y)[1]
+  N             = dim(aux$Y)[2]
+  alpha.st      = c(1.92677,1.34744,0.73504,0.02266,0-0.85173,-1.97278,-3.46788,-5.55246,-8.68384,-14.65000)
+  sigma.st      = c(0.11265,0.17788,0.26768,0.40611,0.62699,0.98583,1.57469,2.54498,4.16591,7.33342)
+  pi.st         = c(0.00609,0.04775,0.13057,0.20674,0.22715,0.18842,0.12047,0.05591,0.01575,0.00115)
+
+  Lambda        = solve(chol(aux$Sigma))
+  Z             = rowSums( ( aux$Y - aux$X %*% aux$A ) %*% Lambda ) / sqrt(N)
+  Y.tilde       = as.vector(log((Z + 0.0000001)^2))
+  Ytilde.alpha  = as.matrix(Y.tilde - alpha.st[as.vector(aux$s)])
+
+  # sampling initial condition
+  V.h0.bar      = 1/((1 / priors$h0.v) + (1 / aux$sigma.v2))
+  m.h0.bar      = V.h0.bar*((priors$h0.m / priors$h0.v) + (aux$H[1] / aux$sigma.v2))
+  h0.draw       = rnorm(1, mean = m.h0.bar, sd = sqrt(V.h0.bar))
+  aux$h0        = h0.draw    
+
+  # sampling sigma.v2
+  sigma.v2.s    = priors$sigmav.s + sum(c(aux$H[1] - aux$h0, diff(aux$H))^2)
+  sigma.v2.draw = sigma.v2.s / rchisq(1, priors$sigmav.nu + T)
+  aux$sigma.v2  = sigma.v2.draw    
+
+  # sampling auxiliary states
+  Pr.tmp        = simplify2array(lapply(1:10,function(x){
+    dnorm(Y.tilde, mean = as.vector(aux$H + alpha.st[x]), sd = sqrt(sigma.st[x]), log = TRUE) + log(pi.st[x])
+  }))
+  Pr            = t(apply(Pr.tmp, 1, function(x){exp(x - max(x)) / sum(exp(x - max(x)))}))
+  s.cum         = t(apply(Pr, 1, cumsum))
+  r             = matrix(rep(runif(T), 10), ncol = 10)
+  ss            = apply(s.cum < r, 1, sum) + 1
+  aux$s         = as.matrix(ss)       
+
+
+  # sampling log-volatilities using functions for tridiagonal precision matrix
+  Sigma.s.inv   = diag(1 / sigma.st[as.vector(aux$s)])
+  D.inv         = Sigma.s.inv + (1 / aux$sigma.v2) * priors$HH
+  b             = as.matrix(Ytilde.alpha / sigma.st[as.vector(aux$s)] + (aux$h0/aux$sigma.v2)*diag(T)[,1])
+  lead.diag     = diag(D.inv)
+  sub.diag      = mgcv::sdiag(D.inv, -1)
+  D.chol        = mgcv::trichol(ld = lead.diag, sd = sub.diag)
+  D.L           = diag(D.chol$ld)
+  mgcv::sdiag(D.L,-1) = D.chol$sd
+  x             = as.matrix(rnorm(T))
+  a             = forwardsolve(D.L, b)
+  draw          = backsolve(t(D.L), a + x)
+  aux$H         = as.matrix(draw)         
+  aux$sigma2    = as.matrix(exp(draw))     
+
+  return(aux)
+}
+```
+
+
+```{r}
+#| echo: true
+DrawPosterior.sv <- function (Y,X,prior.parameters,S1,S2){
+  
+  N <- ncol(Y)
+  K <- ncol(X)
+  T <- nrow(Y)
+  
+  A.prior  <- prior.parameters$A.prior
+  V.prior  <- prior.parameters$V.prior
+  S.prior  <- prior.parameters$S.prior
+  nu.prior <- prior.parameters$nu.prior
+
+  A.posterior     <- array(NA,c(K,N,(S1+S2)))
+  Sigma.posterior <- array(NA,c(N,N,(S1+S2))) 
+  H.posterior     <- array(NA,c(nrow(Y),(S1+S2+1)))  
+  B.posterior     <- array(NA,c(N,N,(S1+S2)))
+  B1.tilde.s      <- array(NA,c(N,K,(S1+S2)))
+  
+  # Initialize h^{0}, which is  T by 1 matrix 
+  H.posterior[,1]       <- matrix(1,T,1) 
+  
+  nu.bar                <- nrow(Y) + nu.prior
+  
+  HH                    <-  2*diag(T)
+  mgcv::sdiag(HH,-1)    <-  -1
+  mgcv::sdiag(HH,1)     <-  -1
+  
+  priors = list(HH       = HH,
+                h0.m     = 0,
+                h0.v     = 1,
+                sigmav.s = 1,
+                sigmav.nu= 1
+              )
+  
+  for (s in 1:(S1+S2)){
+    # STEP 1: draw (A Sigma).s from MNIW(A.bar,V.bar,S.bar,nu.bar)
+    # setting up parameters 
+    
+    V.bar.inv       <- t(X)%*%diag(1/H.posterior[,s])%*%X + diag(1/diag(V.prior))
+    V.bar           <- solve(V.bar.inv)
+    A.bar           <- V.bar%*%(t(X)%*%diag(1/H.posterior[,s])%*%Y + diag(1/diag(V.prior))%*%A.prior)
+    S.bar           <- S.prior+t(Y)%*%diag(1/H.posterior[,s])%*%Y+t(A.prior)%*%diag(1/diag(V.prior))%*%A.prior - t(A.bar)%*%V.bar.inv%*%A.bar
+    
+    draw.sigma.inv  <- solve(rWishart(1, df=nu.bar, Sigma=solve(S.bar))[,,1])
+    Sigma.posterior[,,s] = draw.sigma.inv
+      
+      # start drawing 
+    cholSigma.s      <- chol(Sigma.posterior[,,s])
+    A.posterior[,,s] <- matrix(MASS::mvrnorm(1,as.vector(A.bar),Sigma.posterior[,,s]%x%V.bar),ncol=N)      
+    
+    L                <- t(chol(V.bar))
+    # B.posterior[,,s] <- t(chol(Sigma.posterior[,,s]))
+    B.posterior[,,s] <- solve(t(chol(Sigma.posterior[,,s])))  
+    B1.tilde.s[,,s]  <- B.posterior[,,s]%*%t(A.posterior[,,s])
+    
+    # STEP 2: draw H from SVcommon.Gibbs.iteration
+    if (s == 1){ # initializing input arguments 
+        aux = list( 
+              Y             = Y,
+              X             = X,
+              H             = matrix(1,T,1),
+              h0            = 0,
+              sigma.v2      = 1,
+              s             = matrix(1,T,1),
+              Sigma         = Sigma.posterior[,,s],
+              A             = A.posterior[,,s],
+              sigma2        = matrix(1,T,1)
+              )
+    }else{ # updating input arguments  
+      aux = list(
+                Y           = Y,
+                X           = X,
+                H           = tmp$H,
+                h0          = tmp$h0,
+                sigma.v2    = tmp$sigma.v2,
+                s           = tmp$s,
+                Sigma       = Sigma.posterior[,,s],
+                A           = A.posterior[,,s],
+                sigma2      = tmp$sigma2
+              )
+    }
+
+    # H                     <- diag(T)
+    # sdiag(H,-1)           <- -1     
+    tmp                     <- SVcommon.Gibbs.iteration(aux,priors)
+    H.posterior[,s+1]      <- as.matrix(tmp$sigma2)
+  }
+  
+  return(list(Sigma.posterior = Sigma.posterior[,,(S1+1):(S1+S2)],
+              A.posterior     = A.posterior[,,(S1+1):(S1+S2)],
+              B1.tilde.s      = B1.tilde.s[,,(S1+1):(S1+S2)],
+              B.posterior     = B.posterior[,,(S1+1):(S1+S2)],
+              H.sv            = H.posterior[,(S1+2):(S1+S2+1)]))
+  }
+```
+
+```{r}
+prior.parameters.sv <- GetPrior.parameters(N,p,Sigma.hat)
+posterior.draws <-
+DrawPosterior.sv(Y,X,prior.parameters.sv,N_S1,N_S2)
+```
+
+@fig-pos-svts provides a time series plot of posterior draws mean of $\sigma^2$ at each time spot. From where we can observe the $\sigma^2$ oscillating around 2400. 
+
+```{r}
+#| label: fig-pos-svts 
+#| fig-cap: "Posterior Draw Mean of Stochastic Volatility "
+sigma2.mean.vec <- apply(posterior.draws$H.sv,1,mean) 
+plot.ts(sigma2.mean.vec,main=expression(paste("Posterior Mean of ",sigma^2)),
+        ylab="",type='l',lwd=2,col="#9E9AC8",xlab="T")
+abline(h=mean(sigma2.mean.vec),lty=2)
+```
+
+
+@fig-Gibbs-Sampler-SV plots the S2 draws of Gibbs Sampler of the Stochastic Volatility model, and it shown to be stationary for A and $\Sigma$ when $S_1=5000, S_2=45000$.From where, we can observe the mean of $A_{21},A_{32}$ varying around value of 1, $\Sigma_{21},\Sigma_{22}$ oscillating around 0.0018-0.0019. Under the existence of stochastic volatility, it does not make sense to check whether the posterior draw of $\Sigma$ matrix converges to Identity matrix, but we might conclude that, together with $\sigma^2$, we have reasonable estimated level of the variance matrix of the SVAR model.     
+
+```{r}
+#| label: fig-Gibbs-Sampler-SV 
+#| fig-cap: "Gibbs Sampler draws of A and Sigma-SV model"
+par(mfrow=c(2,2),mar=c(2,2,2,2))
+plot(posterior.draws$A.posterior[2,1,],type='l',col="#660099",ylab="",xlab="",main=expression(A[21]), lwd = 0.1)
+plot(posterior.draws$A.posterior[3,2,],type='l',col="#CC66CC",ylab="",xlab="",main=expression(A[32]), lwd = 0.1)
+plot(posterior.draws$Sigma.posterior[1,1,],type='l',col="#6699CC",ylab="",xlab="",main=expression(Sigma[21]), lwd = 0.1)
+plot(posterior.draws$Sigma.posterior[2,2,],type='l',col="#0066CC",ylab="",xlab="",main=expression(Sigma[22]), lwd = 0.1)
+```
+
+
+## Inverted Gamma 2 Scale Mixture of Normal 
+
+Compared to the baseline model,instead of setting $\kappa_1$ and $\kappa_2$ as fixed values, the overall shrinkage level for auto-regressive slopes $\kappa_1$ is assumed to follow an inverse gamma 2 distribution $IG2(\underline{S}_{\kappa},\underline{\nu}_{\kappa})$, and shrinkage of constant term $\kappa_2$ can be set as $100 \times \kappa_1$.
 
 Under this setting, we consider the following posterior distributions:
 \begin{gather}
@@ -637,97 +976,18 @@ DrawPosterior.e <- function (Y,X,prior.parameters,nu.kappa,S.kappa,S1,S2){
 
 The sign restrictions would be implied in the same way as the basic model.
 
-## Artificial Data Estimation
-
-1000 observations of bi-variate Gaussian random walk processes with the covariance matrix equal to the identity matrix of order 2 are generated as @fig-actificial-data to test whether the modeling frameworks are able to estimate true parameters of the data generating process.
-
-```{r generate bi-variate Gaussian random walk process}
-#| echo: true
-#| label: fig-actificial-data
-#| fig-cap: "Bi-variate Gaussian random walk"
-par(mfrow=c(2,2))
-set.seed(2023)
-RW1 <- arima.sim(model= list(order = c(0, 1, 0)), n=1000, mean=0, sd=1)
-plot.ts(RW1,main="Random Walk 1", col=4)
-plot.ts(diff(RW1),main="First difference of Random Walk 1", col=4)
-
-RW2 <- arima.sim(model= list(order = c(0, 1, 0)), n=1000, mean=0, sd=1)
-plot.ts(RW2,main="Random Walk 2", col=4)
-plot.ts(diff(RW2),main="First difference of Random Walk 2", col=4)
-
-RW  <- cbind(RW1,RW2)
-```
-
-```{r artificial data model setting}
-#| echo: true
-Y       = RW[2:nrow(RW),]
-X       = matrix(1,nrow(Y),1)
-X       = cbind(X,RW[2: nrow(RW)-1,])
-
-N       = ncol(Y)      # number of variables
-p       = 1            # number of lags
-S       = 50000        # sample size
-K       = N*p + 1
-
-A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y                
-Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)   
-
-restrictions = c(-1,1)
-```
-
-### Basic Model
-
-```{r }
-prior.parameters <- GetPrior.parameters(N,p,Sigma.hat)
-poesterior.parameters <- GetPosterior.parameters(X,Y,prior.parameters)
-posterior.draws <- DrawPosterior(N,S,p,poesterior.parameters)
-
-B.draws.restricted <- ImposeSignRestriction(restrictions,N,p,posterior.draws)
-
-B0.draws <- B.draws.restricted$B0.draws
-B1.draws <- B.draws.restricted$B1.draws
-```
-
-```{r check for basic model}
-A.check <- array(NA,c(N+1,N,S))
-S.check <- array(NA,c(N,N,S))
-for (s in 1:S){
-  # convert Bo into Sigma 
-  S.check[,,s] <- B0.draws[,,s] %*% t(B0.draws[,,s])
-  A.check[,,s] <- t(B1.draws[,,s]) %*% B0.draws[,,s]
-}
-```
-
-@tbl-Acheck and @tbl-Scheck show the matrix of $A$ and $\Sigma$, suggesting the basic model estimation using artificial data of 1 lag and constant term is showing zero posterior mean of the autoregressive and covariance matrices are close to an identity matrix and the posterior mean of the constant term is close to zeros too.
-
-```{r}
-#| label: tbl-Acheck
-#| tbl-cap: Basic Model - A
-d1 <- as.data.frame(round(apply(A.check,1:2,mean),4))
-knitr::kable(d1, index=TRUE)
-```
-
-```{r}
-#| label: tbl-Scheck
-#| tbl-cap: Basic Model - Sigma 
-d2 <- as.data.frame(round(apply(S.check,1:2,mean),4))
-knitr::kable(d2, index=TRUE)
-```
-
-### Extended Model
-
 Then we can use the same data to check whether the extension model is working.
 
 ```{r}
-nu.kappa <- 1*100
-S.kappa <- 0.01*100
+nu.kappa <- 1
+S.kappa <- 0.01
 
 prior.parameters <- GetPrior.parameters(N,p,Sigma.hat)
 ```
 
 ```{r}
-S1 = 5000
-S2 = 45000
+S1 = N_S1 
+S2 = N_S2 
 
 posterior.draws <-
 DrawPosterior.e(Y,X,prior.parameters,nu.kappa,S.kappa,S1,S2)
@@ -736,7 +996,7 @@ kappa <- posterior.draws$kappa.e
 
 ```
 
-@fig-Gibbs-Sampler plots the S2 draws of Gibbs Sampler, and it shown to be stationary for A and $\Sigma$.
+@fig-Gibbs-Sampler plots the S2 draws of Gibbs Sampler, and it shown to be stationary for A and $\Sigma$. And it can be observed that the diagonal elements of $\Sigma$ matrix and sub-diagonal elements of $A$ converges to 1, which is supported by @tbl-Acheck2 and @tbl-Scheck2. 
 
 ```{r}
 #| label: fig-Gibbs-Sampler 
@@ -779,36 +1039,32 @@ for (s in 1:S2){
 }
 ```
 
-@tbl-Acheck2 and @tbl-Scheck2 also shows desired results, suggesting the extended model is also working.
+@tbl-Acheck2 and @tbl-Scheck2 also shows desired results, suggesting the extended model is producing estimates close to true parameters of the data generating process.
 
 ```{r}
 #| label: tbl-Acheck2
-#| tbl-cap: Extended Model - A 
+#| tbl-cap: Inverted Gamma 2 scale Model - A 
 d3 <- round(apply(A.check,1:2,mean),4)
 knitr::kable(d3, index=TRUE)
 ```
 
 ```{r}
 #| label: tbl-Scheck2
-#| tbl-cap: Extended Model - Sigma 
+#| tbl-cap: Inverted Gamma 2 scale Model - Sigma 
 d4 <- round(apply(S.check,1:2,mean),4)
 knitr::kable(d4, index=TRUE)
 ```
 
 # Empirical Estimation
 
-## Government Spending Shock 
-
 ```{r}
-#| echo: false
-
-p       = 4            # number of lags
-
+#| echo: true 
+p       = 4            
 Y       = df.num[(1+p):nrow(df.num),]
 X       = matrix(1,nrow(Y),1)
 
-N       = ncol(Y)      # number of variables
-S       = 5000         # sample size
+N       = ncol(Y)     
+S       = N_SAMPLE    
 K       = N*p + 1
 h       = 8  
 
@@ -818,13 +1074,13 @@ for (i in 1:p){
 
 A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y                
 Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)   
-```
 
-Following @Mountford2009effects, the governemnt revenue shock is identified as a shock where govenemnt revenue rises for a year after the shock. In this project, I am restricting only the current period, where the sign of government spending and debt are positive, with all others not restricted.
-
-```{r}
 gov.spending.shock = c(0,1,0,1,0,0,0)
 ```
+
+Following @Mountford2009effects, the government revenue shock is identified as a shock where government revenue rises for a year after the shock. In this project, I am restricting only the current period, where the sign of government spending and debt are positive, with all others not restricted.
+
+## Baseline Model 
 
 ```{r generating prior parameters}
 prior.parameters <- GetPrior.parameters(N,p,Sigma.hat)
@@ -835,6 +1091,28 @@ B.draws.restricted <- ImposeSignRestriction(gov.spending.shock,N,p,posterior.dra
 B0.draws <- B.draws.restricted$B0.draws
 B1.draws <- B.draws.restricted$B1.draws
 ```
+
+@tbl-pos-A presented the mean of posterior draws of A matrices as in the reduced form. 
+```{r}
+#| label: tbl-pos-A
+#| tbl-cap: Inverted Gamma 2 scale Model - A 
+d3 <- round(apply(posterior.draws$A.posterior,1:2,mean),4)
+colnames(d3) <- colnames(df)
+knitr::kable(d3, index=TRUE)
+```
+
+@fig-pos-baseline plots the S2 draws of Gibbs Sampler of the baseline model, and it shown to be stationary for A and $\Sigma$.
+
+```{r}
+#| label: fig-pos-baseline
+#| fig-cap: "Posterior draws of A and Sigma-Baseline model"
+par(mfrow=c(2,2),mar=c(2,2,2,2))
+plot(posterior.draws$A.posterior[2,1,],type='l',col="#660099",ylab="",xlab="",main=expression(A[21]), lwd = 0.1)
+plot(posterior.draws$A.posterior[3,2,],type='l',col="#CC66CC",ylab="",xlab="",main=expression(A[32]), lwd = 0.1)
+plot(posterior.draws$Sigma.posterior[1,1,],type='l',col="#6699CC",ylab="",xlab="",main=expression(Sigma[21]), lwd = 0.1)
+plot(posterior.draws$Sigma.posterior[2,2,],type='l',col="#0066CC",ylab="",xlab="",main=expression(Sigma[22]), lwd = 0.1)
+```
+
 
 ```{r}
 A.posterior = array(NA,c(K,N,S))
@@ -872,7 +1150,6 @@ FEVD.posterior    = 100*FEVD.posterior
 
 IRF.posterior.mps = IRF.posterior[,2,,]
 IRFs.k1           = apply(IRF.posterior.mps,1:2,median)
-# IRF.posterior.mps = IRF.posterior.mps*(0.25/IRFs.k1[2,1])
 IRFs.k1           = apply(IRF.posterior.mps,1:2,median)
 IRFs.inf.k1       = apply(IRF.posterior.mps,1,mean)
 rownames(IRFs.k1) = colnames(df.num)
@@ -882,21 +1159,21 @@ IRFs.k1.hdi    = apply(IRF.posterior.mps,1:2,hdi, credMass=0.68)
 hh             = 1:(h+1)
 ```
 
-@fig-IRF-basic shows the Impulse Response Function of the basic model for 50,000 draws, from which we can't observe any significant or meaningful effects on variables of interest.
+@fig-IRF-basic shows the Impulse Response Function of the baseline model for 50,000 draws, from which we can't observe any significant or meaningful effects on variables of interest.
 
 ```{r}
 #| label: fig-IRF-basic 
 #| fig-cap: "Impulse Response Function-Basic Model"
-names <- c("Real GDP per-capita","Government Spending","Government Revenue","Pubic Debt","Inflation","Cash Rate Target","Stock Price")
+names <- c("GDP","Government Spending","Total Taxes","Pubic Debt","Inflation","Cash Rate Target","Stock Prices")
 
 par(mfrow=c(4,2), mar=c(2,2,2,2),cex.axis=1, cex.lab=1)
 for (n in 1:N){
   ylims     = range(IRFs.k1[n,hh],IRFs.k1.hdi[,n,1:(h+1)],0)
   plot(hh,IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", main=names[n])
-  if (n==5 | n==6){
-    axis(1,c(1,6,11,16,21,26),c("0","5","10","15","20","25"))
+  if (n==5){
+    axis(1,c(1,5,9),c("0","1yr","2yr"))
   } else {
-    axis(1,c(1,6,11,16,21,26),c("0","5","10","15","20","25"))
+    axis(1,c(1,5,9),c("0","1 yr","2yr"))
   }
   axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
   polygon(c(hh,(h+1):1), c(IRFs.k1.hdi[1,n,hh],IRFs.k1.hdi[2,n,(h+1):1]), col="#CBC9E2",border="#756BB1")
@@ -905,24 +1182,50 @@ for (n in 1:N){
 }
 ```
 
+## Stochastic Volatility Heteroskedasticity 
 
 ```{r}
+S1       <- N_S1 
+S2       <- N_S2 
 prior.parameters <- GetPrior.parameters(N,p,Sigma.hat)
-poesterior.parameters <- GetPosterior.parameters(X,Y,prior.parameters)
-
-nu.kappa <- 100 # or 3 /4 /5 
-S.kappa <- 1
-S1 = 5000
-S2 = 45000
-
-posterior.draws <- DrawPosterior.e(Y,X,prior.parameters,nu.kappa,S.kappa,S1,S2)
+posterior.draws <- DrawPosterior.sv(Y,X,prior.parameters,S1,S2)
 
 B.draws.restricted <- ImposeSignRestriction(gov.spending.shock,N,p,posterior.draws)
 
 B0.draws <- B.draws.restricted$B0.draws
 B1.draws <- B.draws.restricted$B1.draws
+```
+
+As presented in @fig-ts-svmean, the stochastic volatility mean plot has a significant difference with @fig-pos-sv, it exhibits higher volatility during AfC, GFC and Covid-19 pandemic. 
+
+```{r}
+#| label: fig-ts-svmean 
+#| fig-cap: "Time Series Plot of Stochastic Volatility Mean"
+
+sv.mean = apply(sqrt(posterior.draws$H.sv),1,mean)
+
+plot(x=dates[5:132], y=sv.mean, type="l",lwd=2, col="#3F007D",xlab="",bty="n",ylab="",ylim=c(0,100),main="Stochastic Volatility Mean")
+abline(v=as.Date("1998-07-01"), col = "grey25", lty = "dotted", lwd = 1.25)
+abline(v=as.Date("2009-07-01"), col = "grey25", lty = "dotted", lwd = 1.25)
+abline(v=as.Date("2020-04-01"), col = "grey25", lty = "dotted", lwd = 1.25)
+text("AFC",x=as.Date("1997-01-01"),y=95,col="black")
+text("GFC",x=as.Date("2008-01-01"),y=95,col="black")
+text("COVID",x=as.Date("2018-04-01"),y=95,col="black")
 
 ```
+
+@fig-pos-sv plots the S2 draws of Gibbs Sampler of the baseline model, and it shown to be stationary for A and $\Sigma$.
+
+```{r}
+#| label: fig-pos-sv
+#| fig-cap: "Posterior draws of A and Sigma-Baseline model"
+par(mfrow=c(2,2),mar=c(2,2,2,2))
+plot(posterior.draws$A.posterior[2,1,],type='l',col="#660099",ylab="",xlab="",main=expression(A[21]), lwd = 0.1)
+plot(posterior.draws$A.posterior[3,2,],type='l',col="#CC66CC",ylab="",xlab="",main=expression(A[32]), lwd = 0.1)
+plot(posterior.draws$Sigma.posterior[1,1,],type='l',col="#6699CC",ylab="",xlab="",main=expression(Sigma[21]), lwd = 0.1)
+plot(posterior.draws$Sigma.posterior[2,2,],type='l',col="#0066CC",ylab="",xlab="",main=expression(Sigma[22]), lwd = 0.1)
+```
+
 
 ```{r}
 S <- dim(posterior.draws$Sigma.posterior)[3]
@@ -961,18 +1264,137 @@ for (s in 1:S){
 FEVD.posterior    = 100*FEVD.posterior
 
 IRF.posterior.mps = IRF.posterior[,2,,]
-IRFs.k1           = apply(IRF.posterior.mps,1:2,median)
-# IRF.posterior.mps = IRF.posterior.mps*(0.25/IRFs.k1[2,1])
-IRFs.k1           = apply(IRF.posterior.mps,1:2,median)
+IRFs.k1.sv           = apply(IRF.posterior.mps,1:2,median)
+
+IRFs.k1.sv           = apply(IRF.posterior.mps,1:2,median)
 IRFs.inf.k1       = apply(IRF.posterior.mps,1,mean)
-rownames(IRFs.k1) = colnames(df.num)
+rownames(IRFs.k1.sv) = colnames(df.num)
 
-IRFs.k1.hdi    = apply(IRF.posterior.mps,1:2,hdi, credMass=0.68)
+IRFs.k1.sv.hdi    = apply(IRF.posterior.mps,1:2,hdi, credMass=0.68)
 hh             = 1:(h+1)
-
 ```
 
-@fig-IRF-extended presents the Impulse Response Function of the extended model, which suggest a slight decrease in GDP while government spending rise, decrease in inflation and Cash Rate Target and Stock Prices. Note that since the government revenue data is not seasonally adjusted, the density looks containing some seasonality.  
+@fig-IRF-SV presents the Impulse Response Function of the Stochastic Volatility model, which suggest a slight decrease in GDP while government spending rises, decrease in inflation and Cash Rate Target and Total Taxes. From this plot, we can see that responses are estimated with more confidence, shown by narrower confidence intervals. 
+
+```{r}
+#| label: fig-IRF-SV  
+#| fig-cap: "Impulse Response Function-SV model"
+par(mfrow=c(4,2), mar=c(2,2,2,2),cex.axis=1, cex.lab=1)
+
+for (n in 1:N){
+  ylims     = range(IRFs.k1.sv[n,hh],IRFs.k1.sv.hdi[,n,1:(h+1)],0)
+  plot(hh,IRFs.k1.sv[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", main=names[n])
+  if (n==5){
+    axis(1,c(1,5,9),c("0","1yr","2yr"))
+  } else {
+    axis(1,c(1,5,9),c("0","1 yr","2yr"))
+  }
+  axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
+  polygon(c(hh,(h+1):1), c(IRFs.k1.sv.hdi[1,n,hh],IRFs.k1.sv.hdi[2,n,(h+1):1]), col="#CBC9E2",border="#756BB1")
+  abline(h=0)
+  lines(hh, IRFs.k1.sv[n,hh],lwd=2,col="black")
+}
+```
+
+
+## Inverted Gamma 2 Scale Mixture of Normal  
+
+```{r}
+prior.parameters <- GetPrior.parameters(N,p,Sigma.hat)
+poesterior.parameters <- GetPosterior.parameters(X,Y,prior.parameters)
+
+nu.kappa <- 100 # or 3 /4 /5 
+S.kappa  <- 1
+S1       <- N_S1 
+S2       <- N_S2 
+
+posterior.draws <- DrawPosterior.e(Y,X,prior.parameters,nu.kappa,S.kappa,S1,S2)
+
+B.draws.restricted <- ImposeSignRestriction(gov.spending.shock,N,p,posterior.draws)
+
+B0.draws <- B.draws.restricted$B0.draws
+B1.draws <- B.draws.restricted$B1.draws
+```
+
+@fig-kappa-dist-em shows the distribution of Gibbs Sampler draws of $\kappa$.
+
+```{r}
+#| label: fig-kappa-dist-em
+#| fig-cap: "Empirical Gibbs Sampler draws of kappa"
+
+kappa <- posterior.draws$kappa.e
+
+hist(kappa,
+     main=expression(paste("Distribution of ",kappa, " draws")),
+     freq=FALSE,
+     xlab = expression(kappa),
+     breaks = 1000,
+     xlim = c(0.002,0.005),
+     col = "turquoise4",
+     lty = "blank")
+```
+
+@fig-pos-ig2 plots the S2 draws of Gibbs Sampler of the inverted gamma 2 scale mixture, and it shown to be stationary for A and $\Sigma$.
+
+```{r}
+#| label: fig-pos-ig2
+#| fig-cap: "Posterior draws of A and Sigma-Inverted Gamma 2 Scale Mixture"
+par(mfrow=c(2,2),mar=c(2,2,2,2))
+plot(posterior.draws$A.posterior[2,1,],type='l',col="#660099",ylab="",xlab="",main=expression(A[21]), lwd = 0.1)
+plot(posterior.draws$A.posterior[3,2,],type='l',col="#CC66CC",ylab="",xlab="",main=expression(A[32]), lwd = 0.1)
+plot(posterior.draws$Sigma.posterior[1,1,],type='l',col="#6699CC",ylab="",xlab="",main=expression(Sigma[21]), lwd = 0.1)
+plot(posterior.draws$Sigma.posterior[2,2,],type='l',col="#0066CC",ylab="",xlab="",main=expression(Sigma[22]), lwd = 0.1)
+```
+
+
+
+```{r}
+S <- dim(posterior.draws$Sigma.posterior)[3]
+
+A.posterior = array(NA,c(K,N,S))
+B.posterior = array(NA,c(N,N,S))
+for (s in 1:S){
+  B = solve(B0.draws[,,s])
+  B.posterior[,,s]= B 
+  A.posterior[,,s]= t(B %*% B1.draws[,,s]) 
+}
+
+IRF.posterior     = array(NA,c(N,N,h+1,S))
+IRF.inf.posterior = array(NA,c(N,N,S))
+FEVD.posterior    = array(NA,c(N,N,h+1,S))
+J                 = cbind(diag(N),matrix(0,N,N*(p-1)))
+for (s in 1:S){
+  A.bold          = rbind(t(A.posterior[2:(1+N*p),,s]),cbind(diag(N*(p-1)),matrix(0,N*(p-1),N)))
+  IRF.inf.posterior[,,s]          = J %*% solve(diag(N*p)-A.bold) %*% t(J) %*% B.posterior[,,s]
+  A.bold.power    = A.bold
+  for (i in 1:(h+1)){
+    if (i==1){
+      IRF.posterior[,,i,s]        = B.posterior[,,s]
+    } else {
+      IRF.posterior[,,i,s]        = J %*% A.bold.power %*% t(J) %*% B.posterior[,,s]
+      A.bold.power                = A.bold.power %*% A.bold
+    }
+    for (n in 1:N){
+      for (nn in 1:N){
+        FEVD.posterior[n,nn,i,s]  = sum(IRF.posterior[n,nn,1:i,s]^2)
+      }
+    }
+    FEVD.posterior[,,i,s]         = diag(1/apply(FEVD.posterior[,,i,s],1,sum))%*%FEVD.posterior[,,i,s]
+  }
+}
+FEVD.posterior    = 100*FEVD.posterior
+
+IRF.posterior.mps = IRF.posterior[,2,,]
+IRFs.k1.ig           = apply(IRF.posterior.mps,1:2,median)
+IRFs.k1.ig           = apply(IRF.posterior.mps,1:2,median)
+IRFs.inf.k1       = apply(IRF.posterior.mps,1,mean)
+rownames(IRFs.k1.ig) = colnames(df.num)
+
+IRFs.k1.ig.hdi    = apply(IRF.posterior.mps,1:2,hdi, credMass=0.68)
+hh             = 1:(h+1)
+```
+
+@fig-IRF-extended presents the Impulse Response Function of the extended model, which suggest a slight decrease in GDP while government spending rises, decreases in GDP and Cash Rate Target, with increase in stock prices. Compared to the baseline model, the change is not much pronounced, but we can observe a wider confidence interval on Inflation. 
 
 ```{r}
 #| label: fig-IRF-extended  
@@ -980,20 +1402,24 @@ hh             = 1:(h+1)
 par(mfrow=c(4,2), mar=c(2,2,2,2),cex.axis=1, cex.lab=1)
 
 for (n in 1:N){
-  ylims     = range(IRFs.k1[n,hh],IRFs.k1.hdi[,n,1:(h+1)],0)
-  plot(hh,IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", main=names[n])
-  if (n==5 | n==6){
-    axis(1,c(1,6,11,16,21,26),c("0","5","10","15","20","25"))
+  ylims     = range(IRFs.k1.ig[n,hh],IRFs.k1.ig.hdi[,n,1:(h+1)],0)
+  plot(hh,IRFs.k1.ig[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", main=names[n])
+  if (n==5){
+    axis(1,c(1,5,9),c("0","1yr","2yr"))
   } else {
-    axis(1,c(1,6,11,16,21,26),c("0","5","10","15","20","25"))
+    axis(1,c(1,5,9),c("0","1 yr","2yr"))
   }
   axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
-  polygon(c(hh,(h+1):1), c(IRFs.k1.hdi[1,n,hh],IRFs.k1.hdi[2,n,(h+1):1]), col="#CBC9E2",border="#756BB1")
+  polygon(c(hh,(h+1):1), c(IRFs.k1.ig.hdi[1,n,hh],IRFs.k1.ig.hdi[2,n,(h+1):1]), col="#CBC9E2",border="#756BB1")
   abline(h=0)
-  lines(hh, IRFs.k1[n,hh],lwd=2,col="black")
+  lines(hh, IRFs.k1.ig[n,hh],lwd=2,col="black")
 }
 ```
 
+
+
+# Conclusion 
+In this project, I have applied Bayesian Estimation Approach to discover the effect of government spending shock on Australian Economy and stock market. A structural vector auto-regression model is applied and identified using sign restrictions. Models to incorporate stochastic volatility and inverted gamma 2 scaled priors are also applied. Since all the models converge under the artificial data and real data, we might suggest that they are correctly estimated. From the impulse response function plots, a government spending shock seems to not have significant influence on the aggregate economy, under the background of Australia. It might be augured that business cycle shocks and monetary shocks are not controlled as in @Mountford2009effects, and sign restrictions might need to be applied in a more complicated system. 
 
 # References {.unnumbered}
 
