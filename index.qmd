@@ -884,8 +884,8 @@ p(A,\Sigma|X,Y,\kappa) \propto L(A,\Sigma|Y,X) \times p(A|\Sigma,\kappa) \times 
 
 We recognize kernel of matrix-normal inverse Wharst distribution, with parameters as follows: 
 \begin{gather}
-\bar{V} = (X'X+(\kappa \underline{V}))^{-1} \\ 
-\\ \bar{A} = \bar{V}(X'Y+(\kappa \underline{V}^{-1}\underline{A})) \\ \\ \bar{S} = \underline{S}+Y'Y+\underline{A}^{'}(\kappa \underline{V})^{-1}\underline{A} - \bar{A}^{'} \bar{V}^{-1}\bar{A} \\ 
+\bar{V} = (X'X+(\kappa \underline{V})^{-1})^{-1} \\ 
+\\ \bar{A} = \bar{V}(X'Y+(\kappa \underline{V})^{-1}\underline{A}) \\ \\ \bar{S} = \underline{S}+Y'Y+\underline{A}^{'}(\kappa \underline{V})^{-1}\underline{A} - \bar{A}^{'} \bar{V}^{-1}\bar{A} \\ 
 \\ \bar{\nu} = T + \underline{\nu}
 \end{gather}
 
